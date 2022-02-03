@@ -1,5 +1,6 @@
 # PWP SPRING 2021
 # GameHub
+GameHub is an API to make interesting website for video games and who love video games!
 # Group information
 * Student 1. Sina Kiarostami, mohammad.kiarostami@oulu.fi
 * Student 2. Sadaf Nazari, sadaf.3.nazari@student.oulu.fi
