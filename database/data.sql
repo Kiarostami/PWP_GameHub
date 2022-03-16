@@ -1,3 +1,24 @@
+------------ADD GENRE--------------
+-------GENRES------------------
+
+INSERT INTO genre (name)
+VALUES ('Online-Multiplayer');
+
+INSERT INTO genre (name)
+VALUES ('Multiplayer online battle arena');
+
+INSERT INTO genre (name)
+VALUES ('Action role-playing game');
+
+INSERT INTO genre (name)
+VALUES ('First-person shooter');
+
+INSERT INTO genre (name)
+VALUES ('Speculative fiction');
+
+INSERT INTO genre (name)
+VALUES ('Hero');
+
 ------------ADD GAME--------------
 -----------COUNTER STRIKE --------
 
@@ -9,13 +30,13 @@ VALUES ("Counter Strike",
         0);
 
 
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'First-person shooter' FROM game
-WHERE game.name == 'Counter Strike';
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'Counter Strike' AND genre.name == 'First-person shooter';
 
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'Online-Multiplayer' FROM game
-WHERE game.name == 'Counter Strike';
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'Counter Strike' AND genre.name == 'Online-Multiplayer';
 
 ------------ADD GAME--------------
 -------- DOTA 2 ------------------
@@ -28,20 +49,19 @@ VALUES ("DOTA 2",
         true,
         0);
 
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'Multiplayer online battle arena' FROM game
-WHERE game.name == 'DOTA 2';
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'DOTA 2' AND genre.name == 'Multiplayer online battle arena';
 
 
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'Action role-playing game' FROM game
-WHERE game.name == 'DOTA 2';
-
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'Speculative fiction' FROM game
-WHERE game.name == 'DOTA 2';
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'DOTA 2' AND genre.name == 'Action role-playing game';
 
 
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'DOTA 2' AND genre.name == 'Speculative fiction';
 
 
 
@@ -55,18 +75,14 @@ VALUES ("Overwatch",
         false ,
         30);
 
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'first-person' FROM game
-WHERE game.name == 'Overwatch';
 
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'shooter' FROM game
-WHERE game.name == 'Overwatch';
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'Overwatch' AND genre.name == 'First-person shooter';
 
-
-INSERT INTO gameGenres (game_id, name)
-SELECT game.id, 'Hero' FROM game
-WHERE game.name == 'Overwatch';
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'Overwatch' AND genre.name == 'Hero';
 
 
 
@@ -135,7 +151,4 @@ VALUES (3, 2);
 
 INSERT INTO gameList (user_id, game_id)
 VALUES (4, 2);
-
-
-
 

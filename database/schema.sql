@@ -1,7 +1,8 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS game;
 DROP TABLE IF EXISTS profile;
-DROP TABLE IF EXISTS gameGenres;
+DROP TABLE IF EXISTS gameGenresList;
+DROP TABLE IF EXISTS genre;
 DROP TABLE IF EXISTS friendRequest;
 DROP TABLE IF EXISTS gameList;
 DROP TABLE IF EXISTS friendList;
@@ -33,15 +34,22 @@ CREATE TABLE profile(
     bio TEXT,
     status TEXT,
     background TEXT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 
-CREATE TABLE gameGenres(
+CREATE TABLE genre(
     id INTEGER primary key AUTOINCREMENT,
+    name TEXT NOT NULL
+);
+
+
+CREATE TABLE gameGenresList(
     game_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    FOREIGN KEY (game_id) REFERENCES game(id)
+    genre_id INTEGER NOT NULL,
+
+    FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES genre(id) ON DELETE CASCADE
 );
 
 CREATE TABLE friendRequest(
@@ -49,24 +57,24 @@ CREATE TABLE friendRequest(
     sender_id INTEGER NOT NULL,
     receiver_id INTEGER NOT NULL,
     creationTime timestamp,
-    FOREIGN KEY (sender_id) REFERENCES user(id),
-    FOREIGN KEY (receiver_id) REFERENCES user(id)
+    FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE gameList(
     id INTEGER primary key AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     game_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (game_id) REFERENCES game(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE
 );
 
 CREATE TABLE friendList(
     id INTEGER primary key AUTOINCREMENT,
     user_1_id INTEGER NOT NULL,
     user_2_id INTEGER NOT NULL,
-    FOREIGN KEY (user_1_id) REFERENCES user(id),
-    FOREIGN KEY (user_2_id) REFERENCES user(id)
+    FOREIGN KEY (user_1_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_2_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE inviteMessage(
@@ -76,7 +84,7 @@ CREATE TABLE inviteMessage(
     receiver_id INTEGER NOT NULL,
     suggestedTime timestamp,
     creationTime timestamp,
-    FOREIGN KEY (game_id) REFERENCES game(id),
-    FOREIGN KEY (sender_id) REFERENCES user(id),
-    FOREIGN KEY (receiver_id) REFERENCES user(id)
+    FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES user(id) ON DELETE CASCADE
 )
