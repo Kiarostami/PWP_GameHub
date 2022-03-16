@@ -1,3 +1,5 @@
+from distutils.debug import DEBUG
+from distutils.log import debug
 import os
 
 from flask import Flask, request
@@ -38,6 +40,16 @@ def create_app(test_config=None):
     from API.controller import user
     app.register_blueprint(user.bp)
     app.add_url_rule("/", endpoint="user")
+
+
+    from API.controller import auth
+    app.register_blueprint(auth.bp)
+    app.add_url_rule("/", endpoint="auth")
+
+    from API.controller import generic
+    app.register_blueprint(generic.bp)
+    app.add_url_rule("/", endpoint="generic")
+
     # from . import api
     # app.register_blueprint(api.bp)
     # app.add_url_rule("/", endpoint="index")
