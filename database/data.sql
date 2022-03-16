@@ -152,3 +152,7 @@ VALUES (3, 2);
 INSERT INTO gameList (user_id, game_id)
 VALUES (4, 2);
 
+
+----------Invite Message------------
+INSERT INTO inviteMessage (game_id, sender_id, receiver_id, suggestedTime, creationTime)
+VALUES (1, 1, 3, "2022-04-16 12:00:00", "2022-02-16 12:11:24")
