@@ -1,4 +1,5 @@
 import sqlite3
+from webbrowser import get
 
 import click
 from flask import current_app, g
@@ -151,5 +152,53 @@ def add_game_to_list(user_id, game_id):
                f"VALUES ({user_id}, {game_id})")
     return "OK"
 
+def get_list_of_friends(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT user.id, user.username FROM user "
+                     f"LEFT JOIN friendList AS FL ON (FL.user_1_id = {user_id} OR FL.user_2_id = {user_id}) "
+                     f"WHERE ((FL.user_2_id = user.id OR FL.user_1_id = user.id) AND user.id != {user_id})"
+                    ).fetchall()
+
+    lst = [(i[0], i[1]) for i in res]
+    return lst
 
 
+def get_receiving_friend_request(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT user.id, user.username, FR.creationTime FROM user, friendRequest as FR "
+                     f"WHERE (FR.receiver_id = {user_id} AND FR.sender_id = user.id)"
+                    ).fetchall()
+
+    lst = [(i[0], i[1]) for i in res]
+    return lst
+
+def get_pending_friend_request(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT user.id, user.username, FR.creationTime FROM user, friendRequest as FR "
+                     f"WHERE (FR.sender_id = {user_id} AND FR.receiver_id = user.id)"
+                    ).fetchall()
+
+    lst = [(i[0], i[1]) for i in res]
+    return lst
+
+
+def get_invite_from_others_message(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.suggestedTime, IM.creationTime "
+                     f"FROM user, game, inviteMessage as IM "
+                     f"WHERE (IM.receiver_id = {user_id} AND user.id = IM.sender_id AND game.id = IM.game_id)"
+                    ).fetchall()
+
+    lst = [(i[0], i[1], i[2], i[3], i[4], i[5]) for i in res]
+    return lst
+
+
+def get_invite_to_others_message(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.suggestedTime, IM.creationTime "
+                     f"FROM user, game, inviteMessage as IM "
+                     f"WHERE (IM.sender_id = {user_id} AND user.id = IM.receiver_id AND game.id = IM.game_id)"
+                    ).fetchall()
+
+    lst = [(i[0], i[1], i[2], i[3], i[4], i[5]) for i in res]
+    return lst
