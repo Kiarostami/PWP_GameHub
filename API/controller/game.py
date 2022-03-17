@@ -7,7 +7,7 @@ from API.db import get_list_of_all_games
 
 from API.models import Game
 
-bp = Blueprint("user", __name__)
+bp = Blueprint("game", __name__)
 
 
 @bp.route("/gamesList", methods=['GET'])
