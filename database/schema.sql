@@ -30,7 +30,7 @@ CREATE TABLE game(
 
 CREATE TABLE profile(
     id INTEGER primary key AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL UNIQUE,
     bio TEXT,
     status TEXT,
     background TEXT NULL,
