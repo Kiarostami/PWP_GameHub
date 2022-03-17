@@ -131,11 +131,22 @@ def get_user_profile(user_id):
         return "invalid", None
 
 
-def get_list_of_games(user_id):
+def get_list_of_games_per_user(user_id):
     db = get_db()
     result = db.execute(f"SELECT game.* from game "
                         f"LEFT JOIN gameList gL on game.id = gL.game_id "
                         f"WHERE {user_id} = gL.user_id").fetchall()
+    lst = []
+    for i in result:
+        lst.append(Game(i[0], i[1], i[2], i[3], i[4], i[5]))
+
+    return lst
+
+
+def get_list_of_all_games(user_id):
+    db = get_db()
+    result = db.execute(f"SELECT game.* from game "
+                        ).fetchall()
     lst = []
     for i in result:
         lst.append(Game(i[0], i[1], i[2], i[3], i[4], i[5]))
@@ -202,3 +213,5 @@ def get_invite_to_others_message(user_id):
 
     lst = [(i[0], i[1], i[2], i[3], i[4], i[5]) for i in res]
     return lst
+
+
