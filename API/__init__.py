@@ -52,6 +52,11 @@ def create_app(test_config=None):
     app.add_url_rule("/", endpoint="auth")
 
 
+    from API.controller import invite_message
+    app.register_blueprint(invite_message.bp)
+    app.add_url_rule("/", endpoint="invite_message")
+
+
     from API.controller import generic
     app.register_blueprint(generic.bp)
     app.add_url_rule("/", endpoint="generic")

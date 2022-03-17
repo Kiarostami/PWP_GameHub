@@ -10,7 +10,8 @@ from passlib.hash import sha256_crypt
 from API.models import User
 from API.models import Profile
 from API.models import Game
-
+from API.models import Genres
+from API.models import InviteMessage
 
 def get_db():
     if 'db' not in g:
@@ -118,6 +119,31 @@ def update_profile_status(user_id, status):
     except Exception:
         return "failed"
 
+def get_user_by_id(user_id):
+    db = get_db()
+    try:
+        res = db.execute(f"SELECT * FROM USER "
+                   f"WHERE id = {user_id}").fetchone()
+        
+        if res:        
+            return User(res[0], res[1], None, None, res[4])
+        return "not found"
+    except:
+        return "invalid"
+
+
+def get_user_by_name(username):
+    db = get_db()
+    try:
+        res = db.execute(f"SELECT * FROM USER "
+                   f"WHERE username = '{username}'").fetchone()
+        
+        if res:        
+            return User(res[0], res[1], None, None, res[4])
+        return "not found"
+    except:
+        return "invalid"
+
 
 def get_user_profile(user_id):
     db = get_db()
@@ -143,7 +169,7 @@ def get_list_of_games_per_user(user_id):
     return lst
 
 
-def get_list_of_all_games(user_id):
+def get_list_of_all_games():
     db = get_db()
     result = db.execute(f"SELECT game.* from game "
                         ).fetchall()
@@ -153,6 +179,35 @@ def get_list_of_all_games(user_id):
 
     return lst
 
+
+def get_game_by_name_or_id(name_or_id):
+    db = get_db()
+    try:
+        res = db.execute(f"SELECT * from game "
+                        f"WHERE id = {name_or_id}").fetchone()
+        if res:
+            gel = get_game_genres_list(res[0])
+            return Game(res[0], res[1], res[2], res[3], res[4], res[5], gel)
+
+    except sqlite3.OperationalError:
+        res = db.execute(f"SELECT * from game "
+                         f"WHERE name = '{name_or_id}'").fetchone()
+                         
+        if res:
+            gel = get_game_genres_list(res[0])
+            return Game(res[0], res[1], res[2], res[3], res[4], res[5], gel)
+    return None 
+
+
+def get_game_genres_list(game_id):
+    db = get_db()
+    res = db.execute(f"SELECT genre.* FROM genre "
+                      f"LEFT JOIN gameGenresList as GGL ON GGL.genre_id = genre.id "
+                      f"WHERE GGL.game_id = {game_id}").fetchall()
+
+    genre_list = [Genres(i[0], i[1]) for i in res]
+
+    return genre_list
 
 def add_game_to_list(user_id, game_id):
     db = get_db()
@@ -195,23 +250,72 @@ def get_pending_friend_request(user_id):
 
 def get_invite_from_others_message(user_id):
     db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.suggestedTime, IM.creationTime "
+    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
                      f"FROM user, game, inviteMessage as IM "
                      f"WHERE (IM.receiver_id = {user_id} AND user.id = IM.sender_id AND game.id = IM.game_id)"
                     ).fetchall()
 
-    lst = [(i[0], i[1], i[2], i[3], i[4], i[5]) for i in res]
+    lst = [(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]) for i in res]
     return lst
 
 
 def get_invite_to_others_message(user_id):
     db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.suggestedTime, IM.creationTime "
+    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
                      f"FROM user, game, inviteMessage as IM "
                      f"WHERE (IM.sender_id = {user_id} AND user.id = IM.receiver_id AND game.id = IM.game_id)"
                     ).fetchall()
-
-    lst = [(i[0], i[1], i[2], i[3], i[4], i[5]) for i in res]
+    
+    lst = [(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]) for i in res]
     return lst
 
+def get_invite_msg_by_id(msg_id):
+    db = get_db()
+    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+                     f"FROM user AS SEN, user AS REC, game, inviteMessage as IM "
+                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
+                    ).fetchone()
+    if res:
+        im = InviteMessage(res[6], res[4], res[0], res[2], res[7], res[8], res[9])
+        im.game_name = res[5]
+        im.receiver_username = res[3]
+        im.sender_username = res[1]
+        return (im)
+    return None
 
+
+def update_invite_msg_by_id(msg_id, status):
+    db = get_db()
+    db.execute(f"UPDATE inviteMessage as IM "
+               f"SET accepted={status} "
+               f"WHERE IM.id = {msg_id}"
+              )
+    db.commit()
+
+    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+                     f"FROM user AS SEN, user AS REC, game, inviteMessage as IM "
+                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
+                    ).fetchone()
+    if res:
+        im = InviteMessage(res[6], res[4], res[0], res[2], res[7], res[8], res[9])
+        im.game_name = res[5]
+        im.receiver_username = res[3]
+        im.sender_username = res[1]
+        return (im)
+    return None
+
+
+def create_invite_msg(im: InviteMessage):
+    db = get_db()
+    db.execute(f"INSERT INTO inviteMessage (game_id, sender_id, receiver_id, suggestedTime, creationTime) "
+               f"VALUES ({im.game_id}, {im.sender_id}, {im.receiver_id}, '{im.suggestedTime}', '{im.creationTime}') "
+              )
+    db.commit()
+    return "ok"
+
+
+def delete_invite_msg(msg_id: int):
+    db = get_db()
+    db.execute(f"DELETE FROM inviteMessage WHERE id = {msg_id}")
+    db.commit()
+    return("ok")

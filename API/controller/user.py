@@ -10,12 +10,28 @@ from API.db import get_list_of_friends
 from API.db import get_user_profile
 from API.db import get_pending_friend_request
 from API.db import get_receiving_friend_request
-from API.db import get_invite_from_others_message
-from API.db import get_invite_to_others_message
+from API.db import get_user_by_id
+from API.db import get_user_by_name
 
 from API.models import User
 
 bp = Blueprint("user", __name__)
+
+
+@bp.route("/user/<int:uid>", methods=['GET'])
+def get_user_info_by_id(uid: int):
+    u = get_user_by_id(uid)
+    if type(u) == User:
+        return jsonify({"status": 'ok', 'payload': u.protected()})
+    return jsonify({"status": u})
+
+
+@bp.route("/user/uname/<string:name>", methods=['GET'])
+def get_user_info_by_name(name: str):
+    u = get_user_by_name(name)
+    if type(u) == User:
+        return jsonify({"status": 'ok', 'payload': u.protected()})
+    return jsonify({"status": u})
 
 
 @bp.route("/getGameList", methods=["GET"])
@@ -53,19 +69,6 @@ def getPendingFrReq():
     user_id = session['id']
     fr = get_pending_friend_request(user_id)
     return jsonify({'status': 'ok', 'payload': str(fr)})
-
-@bp.route("/getFrndsMsg", methods=["GET"])
-def get_other_inv_msg():
-    user_id = session['id']
-    m = get_invite_from_others_message(user_id)
-    return jsonify({'status': 'ok', 'payload': m})
-
-
-@bp.route("/getUsrMsg", methods=["GET"])
-def get_user_inv_msg():
-    user_id = session['id']
-    m = get_invite_to_others_message(user_id)
-    return jsonify({'status': 'ok', 'payload': m})
 
 
 @bp.route("/upProf", methods=["POST"])

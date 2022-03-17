@@ -5,18 +5,25 @@ class User:
     email: str = None
     avatar: str = "defaultav.png"
 
-    def __init__(self, uid, username, password, email, avatar):
+    def __init__(self, uid, username, password, email, avatar=None):
         self.id = uid
         self.username = username
         self.password = password
         self.email = email
-        self.avatar = avatar
+        if avatar:
+            self.avatar = avatar
 
     def __repr__(self):
         return self.__dict__.__str__()
 
     def __str__(self):
         return self.__dict__.__str__()
+
+    def protected(self):
+        tmp = self.__dict__
+        tmp.pop('email')
+        tmp.pop('password')
+        return tmp.__str__()
 
 
 class Profile:
@@ -47,14 +54,16 @@ class InviteMessage:
     receiver_id: int = None
     suggestedTime: str = None
     creationTime: str = None
+    accepted: bool = None
 
-    def __init__(self, imid, game_id, sender_id, receiver_id, st, ct):
+    def __init__(self, imid, game_id, sender_id, receiver_id, st, ct, accepted = None):
         self.id = imid
         self.game_id = game_id
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.suggestedTime = st
         self.creationTime = ct
+        self.accepted = accepted
 
     def __repr__(self):
         return self.__dict__.__str__()
@@ -80,14 +89,13 @@ class GameList:
         return self.__dict__.__str__()
 
 
-class GameGenres:
+class Genres:
     id: int = None
     game_id: int = None
     name: str = None
 
-    def __init__(self, ggid, gid, name):
+    def __init__(self, ggid, name):
         self.id = ggid
-        self.game_id = gid
         self.name = name
 
     def __repr__(self):
@@ -104,13 +112,16 @@ class Game:
     description: str = None
     isFree: int = None
     price: int = None
+    genresList: list = None
 
-    def __init__(self, gid, name, publisher, description, isFree, price):
+    def __init__(self, gid, name, publisher, description, isFree, price, genresList=None):
         self.id = gid
         self.name = name
         self.publisher = publisher
         self.description = description
         self.isFree = isFree
+        self.price = price
+        self.genresList = genresList
 
     def __repr__(self):
         return self.__dict__.__str__()
