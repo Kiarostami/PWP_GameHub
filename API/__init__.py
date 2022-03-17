@@ -42,9 +42,15 @@ def create_app(test_config=None):
     app.add_url_rule("/", endpoint="user")
 
 
+    from API.controller import game
+    app.register_blueprint(game.bp)
+    app.add_url_rule("/", endpoint="game")
+
+
     from API.controller import auth
     app.register_blueprint(auth.bp)
     app.add_url_rule("/", endpoint="auth")
+
 
     from API.controller import generic
     app.register_blueprint(generic.bp)
