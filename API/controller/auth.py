@@ -15,7 +15,7 @@ def login():
     if request.method == "POST":
         if all(k in request.form.keys() for k in ["username",
                                                   "password"]):
-            res = check_login(request.form['username'], request.form['password'])
+            res = check_login(request.form['username'].lower(), request.form['password'])
             if res[0] != "OK":
                 return jsonify({"status": res})
             session.clear()
@@ -38,7 +38,7 @@ def addUser():
                                               "password",
                                               "email",
                                               ]):
-        res = add_user(request.form['username'],
+        res = add_user(request.form['username'].lower(),
                        request.form['password'],
                        request.form["email"],
                        request.form["avatar"] if "avatar" in request.form.keys() else None
