@@ -5,7 +5,7 @@ from werkzeug.exceptions import abort
 
 from API.db import add_user
 from API.db import add_profile
-from API.db import get_list_of_games
+from API.db import get_list_of_games_per_user
 from API.db import get_list_of_friends
 from API.db import get_user_profile
 from API.db import get_pending_friend_request
@@ -21,7 +21,7 @@ bp = Blueprint("user", __name__)
 @bp.route("/getGameList", methods=["GET"])
 def getUsersGame():
     user_id = session['id']
-    gl = get_list_of_games(user_id)
+    gl = get_list_of_games_per_user(user_id)
     return jsonify({"status": "OK", 'payload': str(gl)})
 
 
@@ -54,17 +54,20 @@ def getPendingFrReq():
     fr = get_pending_friend_request(user_id)
     return jsonify({'status': 'ok', 'payload': str(fr)})
 
-@bp.route("/getFrndsMsg")
+@bp.route("/getFrndsMsg", methods=["GET"])
 def get_other_inv_msg():
     user_id = session['id']
     m = get_invite_from_others_message(user_id)
     return jsonify({'status': 'ok', 'payload': m})
 
 
-@bp.route("/getUsrMsg")
+@bp.route("/getUsrMsg", methods=["GET"])
 def get_user_inv_msg():
     user_id = session['id']
     m = get_invite_to_others_message(user_id)
     return jsonify({'status': 'ok', 'payload': m})
 
 
+@bp.route("/upProf", methods=["POST"])
+def update_profile():
+    pass
