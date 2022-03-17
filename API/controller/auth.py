@@ -5,31 +5,28 @@ from werkzeug.exceptions import abort
 
 from API.db import check_login
 from API.db import add_user
-from API.models import User
 
 bp = Blueprint("auth", __name__)
 
 
 @bp.route("/login", methods=["POST"])
 def login():
-    if request.method == "POST":
-        if all(k in request.form.keys() for k in ["username",
-                                                  "password"]):
-            res = check_login(request.form['username'].lower(), request.form['password'])
-            if res[0] != "OK":
-                return jsonify({"status": res})
-            session.clear()
-            session['user'] = res[1].username
-            session['id'] = res[1].id
-            return jsonify({"status": "OK"})
-
-    return jsonify({'status': 'invalid'})
-
+    if all(k in request.form.keys() for k in ["username",
+                                                "password"]):
+        res = check_login(request.form['username'].lower(), request.form['password'])
+        if res[0] != "ok":
+            return jsonify({"status": res})
+        session.clear()
+        session['user'] = res[1].username
+        session['id'] = res[1].id
+        return jsonify({"status": "ok"})
+    return jsonify({'status': 'not valid parameters'})
+\
 
 @bp.route("/logout", methods=["POST", "GET"])
 def logout():
     session.clear()
-    return jsonify({"status": "OK"})
+    return jsonify({"status": "ok"})
 
 
 @bp.route("/addUser", methods = ["POST"])
@@ -38,6 +35,8 @@ def addUser():
                                               "password",
                                               "email",
                                               ]):
+        if (request.form['username'].strip() == "" or request.form['password'].strip() == "" or "@" not in request.form["email"]):
+            return jsonify({'status': 'invalid parameters'})
         res = add_user(request.form['username'].lower(),
                        request.form['password'],
                        request.form["email"],
@@ -45,9 +44,9 @@ def addUser():
                        )
 
 
-        if res != "OK":
+        if res != "ok":
             return jsonify({"status": res})
         
-        return jsonify({"status": "OK"})
+        return jsonify({"status": "ok"})
 
-    return jsonify({'status': 'invalid'})
+    return jsonify({'status': 'invalid parameters'})

@@ -1,10 +1,7 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, jsonify, Response, session
+    Blueprint, jsonify, session
 )
-from werkzeug.exceptions import abort
 
-from API.db import add_user
-from API.db import add_profile
 from API.db import get_list_of_games_per_user
 from API.db import get_list_of_friends
 from API.db import get_user_profile
@@ -35,21 +32,21 @@ def get_user_info_by_name(name: str):
 
 
 @bp.route("/getGameList", methods=["GET"])
-def getUsersGame():
+def get_users_game():
     user_id = session['id']
     gl = get_list_of_games_per_user(user_id)
     return jsonify({"status": "OK", 'payload': str(gl)})
 
 
 @bp.route("/getFriends", methods=["GET"])
-def getFrindsList():
+def get_friends_list():
     user_id = session['id']
     fl = get_list_of_friends(user_id)
     return jsonify({"status": "ok", "payload": fl})
 
 
 @bp.route("/profile", methods=["GET"])
-def getProfile():
+def get_profile():
     user_id = session['id']
     p = get_user_profile(user_id)
     if p[0] != "OK":
@@ -58,14 +55,14 @@ def getProfile():
 
 
 @bp.route("/getFrndReq", methods=['GET'])
-def getFriendRequest():
+def get_friend_request():
     user_id = session['id']
     fr = get_receiving_friend_request(user_id)
     return jsonify({'status': 'ok', 'payload': str(fr)})
 
 
 @bp.route("/getPendingFrndReq", methods=["GET"])
-def getPendingFrReq():
+def get_pending_requests():
     user_id = session['id']
     fr = get_pending_friend_request(user_id)
     return jsonify({'status': 'ok', 'payload': str(fr)})

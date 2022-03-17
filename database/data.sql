@@ -104,6 +104,9 @@ INSERT INTO user (username, password, email)
 VALUES ("danial", "$5$rounds=535000$U39C77Rk4IOk2P0e$qKPito9ZaBAfTMQV28urOeBcUVMQf2a42xYDpolaV06", "danial.3.khoshkholgh@student.oulu.fi");
 
 
+INSERT INTO user (username, password, email)
+VALUES ("Simo", "$5$rounds=535000$U39C77Rk4IOk2P0e$qKPito9ZaBAfTMQV28urOeBcUVMQf2a42xYDpolaV06", "simo@test.com");
+
 
 ----------ADD Profiles -------------
 INSERT INTO profile (user_id, bio, status)
@@ -114,7 +117,8 @@ INSERT INTO profile (user_id, bio, status)
 VALUES (3, "InYourDreams", "Online");
 INSERT INTO profile (user_id, bio, status)
 VALUES (4, "KTKamran", "Online");
-
+INSERT INTO profile (user_id, bio, status)
+VALUES (5, "SUUUS", "Online");
 
 
 ------------ADD Friend --------------
@@ -155,4 +159,5 @@ VALUES (4, 2);
 
 ----------Invite Message------------
 INSERT INTO inviteMessage (game_id, sender_id, receiver_id, suggestedTime, creationTime)
-VALUES (1, 1, 3, "2022-04-16 12:00:00", "2022-02-16 12:11:24")
+VALUES (1, 1, 3, "2022-04-16 12:00:00", "2022-02-16 12:11:24");
+

@@ -1,5 +1,5 @@
+from datetime import datetime
 import sqlite3
-from webbrowser import get
 
 import click
 from flask import current_app, g
@@ -12,6 +12,7 @@ from API.models import Profile
 from API.models import Game
 from API.models import Genres
 from API.models import InviteMessage
+from API.models import FriendRequest
 
 def get_db():
     if 'db' not in g:
@@ -76,7 +77,7 @@ def add_user(username, password, email, avatar = None):
             db.execute(f"INSERT INTO user (username, password, email) "
                    f"VALUES ('{username}', '{hashed_pass}', '{email}')")
         db.commit()
-        return "OK"
+        return "ok"
 
     except Exception:
         db.rollback()
@@ -89,7 +90,7 @@ def check_login(username, password):
         res = db.execute(f"SELECT id, username, password, email, avatar FROM user WHERE username = '{username}'").fetchone()
         if sha256_crypt.verify(password, res[2]):
             user = User(res[0], res[1], None, res[3], res[4])
-            return "OK", user
+            return "ok", user
         else:
             return "username or password is wrong!", None
     except Exception:
@@ -103,7 +104,7 @@ def add_profile(username, bio, status, background):
                          f"VALUES (SELECT id from user WHERE username = '{username}', "
                          f"'{bio}', '{status}', '{background}')")
         db.commit()
-        return "OK"
+        return "ok"
     except Exception:
         return "failed"
 
@@ -114,7 +115,7 @@ def update_profile_status(user_id, status):
         db.execute(f"UPDATE profile SET status = '{status}' where user_id = {user_id}")
         db.commit()
 
-        return "OK"
+        return "ok"
 
     except Exception:
         return "failed"
@@ -151,7 +152,7 @@ def get_user_profile(user_id):
         res = db.execute(f"SELECT * from profile WHERE user_id = {user_id}").fetchone()
 
         prof = Profile(res[0], res[1], res[2], res[3], res[4])
-        return "OK", prof
+        return "ok", prof
 
     except Exception:
         return "invalid", None
@@ -211,18 +212,21 @@ def get_game_genres_list(game_id):
 
 def add_game_to_list(user_id, game_id):
     db = get_db()
-    res = db.execute(f"SELECT * FROM gameList WHERE user_id={user_id} AND game_id = game_id").fetchall()
+    res = db.execute(f"SELECT * FROM gameList WHERE user_id={user_id} "
+                    f"AND game_id = game_id").fetchall()
     if len(res) > 0:
         return "already added"
     db.execute(f"INSERT INTO gameList (user_id, game_id) "
                f"VALUES ({user_id}, {game_id})")
-    return "OK"
+    return "ok"
 
 def get_list_of_friends(user_id):
     db = get_db()
     res = db.execute(f"SELECT user.id, user.username FROM user "
-                     f"LEFT JOIN friendList AS FL ON (FL.user_1_id = {user_id} OR FL.user_2_id = {user_id}) "
-                     f"WHERE ((FL.user_2_id = user.id OR FL.user_1_id = user.id) AND user.id != {user_id})"
+                     f"LEFT JOIN friendList AS FL ON (FL.user_1_id = {user_id}  "
+                     f"OR FL.user_2_id = {user_id}) "
+                     f"WHERE ((FL.user_2_id = user.id OR FL.user_1_id = user.id) "
+                     f"AND user.id != {user_id})"
                     ).fetchall()
 
     lst = [(i[0], i[1]) for i in res]
@@ -231,7 +235,8 @@ def get_list_of_friends(user_id):
 
 def get_receiving_friend_request(user_id):
     db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, FR.creationTime FROM user, friendRequest as FR "
+    res = db.execute(f"SELECT user.id, user.username, FR.creationTime FROM user, "
+                     f"friendRequest as FR "
                      f"WHERE (FR.receiver_id = {user_id} AND FR.sender_id = user.id)"
                     ).fetchall()
 
@@ -240,7 +245,8 @@ def get_receiving_friend_request(user_id):
 
 def get_pending_friend_request(user_id):
     db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, FR.creationTime FROM user, friendRequest as FR "
+    res = db.execute(f"SELECT user.id, user.username, FR.creationTime "
+                     f"FROM user, friendRequest as FR "
                      f"WHERE (FR.sender_id = {user_id} AND FR.receiver_id = user.id)"
                     ).fetchall()
 
@@ -250,9 +256,11 @@ def get_pending_friend_request(user_id):
 
 def get_invite_from_others_message(user_id):
     db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, "
+                     f"IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
                      f"FROM user, game, inviteMessage as IM "
-                     f"WHERE (IM.receiver_id = {user_id} AND user.id = IM.sender_id AND game.id = IM.game_id)"
+                     f"WHERE (IM.receiver_id = {user_id} AND user.id = IM.sender_id "
+                     f"AND game.id = IM.game_id)"
                     ).fetchall()
 
     lst = [(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]) for i in res]
@@ -261,9 +269,11 @@ def get_invite_from_others_message(user_id):
 
 def get_invite_to_others_message(user_id):
     db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+    res = db.execute(f"SELECT user.id, user.username, game.id, game.name, "
+                     f"IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
                      f"FROM user, game, inviteMessage as IM "
-                     f"WHERE (IM.sender_id = {user_id} AND user.id = IM.receiver_id AND game.id = IM.game_id)"
+                     f"WHERE (IM.sender_id = {user_id} AND user.id = IM.receiver_id "
+                     f"AND game.id = IM.game_id)"
                     ).fetchall()
     
     lst = [(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]) for i in res]
@@ -271,9 +281,11 @@ def get_invite_to_others_message(user_id):
 
 def get_invite_msg_by_id(msg_id):
     db = get_db()
-    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, "
+                     f"game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
                      f"FROM user AS SEN, user AS REC, game, inviteMessage as IM "
-                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
+                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id "
+                     f"AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
                     ).fetchone()
     if res:
         im = InviteMessage(res[6], res[4], res[0], res[2], res[7], res[8], res[9])
@@ -292,9 +304,11 @@ def update_invite_msg_by_id(msg_id, status):
               )
     db.commit()
 
-    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, "
+                     f"game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
                      f"FROM user AS SEN, user AS REC, game, inviteMessage as IM "
-                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
+                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id "
+                     f"AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
                     ).fetchone()
     if res:
         im = InviteMessage(res[6], res[4], res[0], res[2], res[7], res[8], res[9])
@@ -307,8 +321,10 @@ def update_invite_msg_by_id(msg_id, status):
 
 def create_invite_msg(im: InviteMessage):
     db = get_db()
-    db.execute(f"INSERT INTO inviteMessage (game_id, sender_id, receiver_id, suggestedTime, creationTime) "
-               f"VALUES ({im.game_id}, {im.sender_id}, {im.receiver_id}, '{im.suggestedTime}', '{im.creationTime}') "
+    db.execute(f"INSERT INTO inviteMessage (game_id, sender_id, receiver_id, "
+               f"suggestedTime, creationTime) "
+               f"VALUES ({im.game_id}, {im.sender_id}, {im.receiver_id}, "
+               f"'{im.suggestedTime}', '{im.creationTime}')"
               )
     db.commit()
     return "ok"
@@ -319,3 +335,85 @@ def delete_invite_msg(msg_id: int):
     db.execute(f"DELETE FROM inviteMessage WHERE id = {msg_id}")
     db.commit()
     return("ok")
+
+
+def get_sent_friend_requests_by_user_id(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT * from friendRequest WHERE sender_id = {user_id}").fetchall()
+    if res:
+        lst = [FriendRequest(i[0], i[1], [2], i[3]) for i in res]
+        return lst
+    return None
+    
+
+def get_received_friend_requests_by_user_id(user_id):
+    db = get_db()
+    res = db.execute(f"SELECT * from friendRequest WHERE receiver_id = {user_id}").fetchall()
+    if res:
+        lst = [FriendRequest(i[0], i[1], [2], i[3]) for i in res]
+        return lst
+    return None
+
+def check_if_friends(user_1_id, user_2_id):
+    db = get_db()
+    res = db.execute(f"SELECT * FROM friendList "
+                     f"WHERE ((user_1_id = {user_1_id} AND user_2_id = {user_2_id}) "
+                     f"OR (user_2_id = {user_1_id} AND user_1_id = {user_2_id}))").fetchone()
+    if res:
+        return True
+    return False
+
+def check_if_pending_request(user_1_id, user_2_id):
+    db = get_db()
+    res = db.execute(f"SELECT * FROM friendRequest "
+                    f"WHERE sender_id = {user_2_id} AND receiver_id = {user_1_id}").fetchone()
+
+    if res:
+        return res[0]
+    return False
+     
+def add_friend_req(sender_id, receiver_id):
+    db = get_db()
+    cf = check_if_friends(sender_id, receiver_id)
+    if cf:
+        return "already friend"
+    cpr = check_if_pending_request(sender_id, receiver_id)
+    # CPR: INT 
+    if cpr:
+        # ACCEPT FRIEND REQUEST
+        db.execute(f"DELETE FROM friendRequest WHERE id = {cpr}")
+        db.commit()
+        db.execute(f"INSERT INTO friendList (user_1_id, user_2_id) "
+                    f"VALUES ({receiver_id}, {sender_id})")
+        db.commit()
+        return "accepted"
+    cpr = check_if_pending_request(receiver_id, sender_id)
+    if cpr:
+        return "already sent"
+    ct = datetime.now()
+    db.execute(f"INSERT INTO friendRequest (sender_id, receiver_id, creationTime) "
+                f"VALUES ({sender_id}, {receiver_id}, '{ct}')")
+    db.commit()
+    return "ok"
+
+def delete_friend_req(fr_id, user_id):
+    db = get_db()
+    
+    db.execute(f"DELETE FROM friendRequest WHERE (id = {fr_id} AND receiver_id = {user_id}) ")
+    db.commit()
+    return "ok"
+
+def accept_friend_request(fr_id, user_id):
+    db = get_db()
+    res = db.execute(f"SELECT * FROM friendRequest "
+                     f"WHERE id = {fr_id} AND receiver_id = {user_id} "
+                     ).fetchone()
+    if res:
+        db.execute(f"DELETE FROM friendRequest WHERE id = {res[0]}")
+        db.commit()
+        db.execute(f"INSERT INTO friendList (user_1_id, user_2_id) "
+                    f"VALUES ({res[1]}, {res[2]})")
+        db.commit()
+        return "accepted"
+
+    return "not found"

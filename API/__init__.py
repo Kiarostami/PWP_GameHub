@@ -1,9 +1,16 @@
-from distutils.debug import DEBUG
-from distutils.log import debug
 import os
 
-from flask import Flask, request
+from flask import Flask
 
+
+from API.controller import generic
+from API.controller import user
+from API.controller import game
+from API.controller import auth
+from API.controller import invite_message
+from API.controller import freind_request
+
+from API import db
 
 def create_app(test_config=None):
     # create and configure the app
@@ -31,38 +38,32 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
-    from . import db
+
     db.init_app(app)
 
-    # from . import auth
-    # app.register_blueprint(auth.bp)
 
-    from API.controller import user
     app.register_blueprint(user.bp)
     app.add_url_rule("/", endpoint="user")
 
 
-    from API.controller import game
     app.register_blueprint(game.bp)
     app.add_url_rule("/", endpoint="game")
 
 
-    from API.controller import auth
     app.register_blueprint(auth.bp)
     app.add_url_rule("/", endpoint="auth")
 
 
-    from API.controller import invite_message
     app.register_blueprint(invite_message.bp)
     app.add_url_rule("/", endpoint="invite_message")
 
 
-    from API.controller import generic
+    app.register_blueprint(freind_request.bp)
+    app.add_url_rule("/", endpoint="friend_request")
+
+
     app.register_blueprint(generic.bp)
     app.add_url_rule("/", endpoint="generic")
 
-    # from . import api
-    # app.register_blueprint(api.bp)
-    # app.add_url_rule("/", endpoint="index")
 
     return app

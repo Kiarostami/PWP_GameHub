@@ -85,4 +85,3 @@ def delete_inv(msg_id: int):
             return jsonify({"status": "ok"})
         return jsonify({"status": 'invalid'})
     return jsonify({"status": 'not found'}) 
-

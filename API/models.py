@@ -164,4 +164,3 @@ class FriendList:
 
     def __str__(self):
         return self.__dict__.__str__()
-
