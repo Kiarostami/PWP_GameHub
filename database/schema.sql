@@ -84,6 +84,7 @@ CREATE TABLE inviteMessage(
     receiver_id INTEGER NOT NULL,
     suggestedTime timestamp,
     creationTime timestamp,
+    accepted BOOLEAN,
     FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES user(id) ON DELETE CASCADE
