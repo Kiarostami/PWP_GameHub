@@ -5,10 +5,10 @@ from flask import (
 from API.db import get_list_of_games_per_user
 from API.db import get_list_of_friends
 from API.db import get_user_profile
-from API.db import get_pending_friend_request
-from API.db import get_receiving_friend_request
 from API.db import get_user_by_id
 from API.db import get_user_by_name
+from API.db import add_profile
+from API.db import update_profile_status
 
 from API.models import User
 
@@ -35,7 +35,7 @@ def get_user_info_by_name(name: str):
 def get_users_game():
     user_id = session['id']
     gl = get_list_of_games_per_user(user_id)
-    return jsonify({"status": "OK", 'payload': str(gl)})
+    return jsonify({"status": "ok", 'payload': gl})
 
 
 @bp.route("/getFriends", methods=["GET"])
@@ -49,25 +49,19 @@ def get_friends_list():
 def get_profile():
     user_id = session['id']
     p = get_user_profile(user_id)
-    if p[0] != "OK":
+    if p[0] != "ok":
         return jsonify({'status': 'invalid'})
-    return jsonify({'status': 'ok', 'payload': str(p[1])})
+    return jsonify({'status': 'ok', 'payload': p[1]})
 
 
-@bp.route("/getFrndReq", methods=['GET'])
-def get_friend_request():
+@bp.route("/add_profile/<string:bio>/<string:status>", methods=["POST"])
+def add_user_profile(bio, status):
+    username = session['user']
+    res = add_profile(username, bio, status)
+    return jsonify({'status': res}) 
+
+@bp.route("/update_status/<string:status>", methods=["PUT"])
+def update_user_profile(status):
     user_id = session['id']
-    fr = get_receiving_friend_request(user_id)
-    return jsonify({'status': 'ok', 'payload': str(fr)})
-
-
-@bp.route("/getPendingFrndReq", methods=["GET"])
-def get_pending_requests():
-    user_id = session['id']
-    fr = get_pending_friend_request(user_id)
-    return jsonify({'status': 'ok', 'payload': str(fr)})
-
-
-@bp.route("/upProf", methods=["POST"])
-def update_profile():
-    pass
+    update_profile_status(user_id, status)
+    return jsonify({"status": "ok"}) 

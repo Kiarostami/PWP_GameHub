@@ -1,8 +1,6 @@
 from flask import (Blueprint, jsonify, session)
-from datetime import datetime, time
+from datetime import datetime
 
-
-from API.controller import user
 
 from API.db import get_invite_from_others_message
 from API.db import get_invite_to_others_message
@@ -35,7 +33,7 @@ def get_msg(msg_id: int):
     msg = get_invite_msg_by_id(msg_id)
     if msg:
         if user_id == msg.receiver_id or user_id == msg.sender_id:
-            return jsonify({"status": 'ok', 'payloda': str(msg)})
+            return jsonify({"status": 'ok', 'payloda': msg.__dict__})
         return jsonify({"status": 'invalid'})
 
     return  jsonify({"status": 'not found'})
@@ -47,7 +45,7 @@ def accept_inv(msg_id: int):
     if msg:
         if user_id == msg.receiver_id:
             msg = update_invite_msg_by_id(msg_id, True)
-            return jsonify({"status": 'ok', 'payloda': str(msg)})
+            return jsonify({"status": 'ok', 'payloda': msg.__dict__})
         return jsonify({"status": 'invalid'})
 
     return jsonify({"status": 'not found'})
@@ -60,7 +58,7 @@ def reject_inv(msg_id: int):
     if msg:
         if user_id == msg.receiver_id:
             msg = update_invite_msg_by_id(msg_id, False)
-            return jsonify({"status": 'ok', 'payloda': str(msg)})
+            return jsonify({"status": 'ok', 'payloda': msg.__dict__})
         return jsonify({"status": 'invalid'})
 
     return jsonify({"status": 'not found'})

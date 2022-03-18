@@ -1,5 +1,5 @@
 import pytest
-from flask import g, session
+from flask import session
 from API.db import get_db
 
 

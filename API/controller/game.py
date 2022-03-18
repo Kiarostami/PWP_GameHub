@@ -1,10 +1,12 @@
+from crypt import methods
 from flask import (
-    Blueprint, jsonify
+    Blueprint, jsonify, session
 )
 
 
 from API.db import get_list_of_all_games
 from API.db import get_game_by_name_or_id
+from API.db import add_game_to_list
 
 
 bp = Blueprint("game", __name__)
@@ -21,4 +23,11 @@ def get_game(name_or_id):
     game_to_return = get_game_by_name_or_id(name_or_id)
     if game_to_return:
         return jsonify({"status": 'ok', 'payload': str(game_to_return)})
-    return  jsonify({"status": 'not found'})
+    return jsonify({"status": 'not found'})
+
+
+@bp.route("/games/add/<int:game_id>", methods=["POST"])
+def add_game(game_id):
+    user_id = session['id']
+    agtl = add_game_to_list(user_id, game_id)
+    return jsonify({"status": agtl}) 

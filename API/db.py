@@ -69,19 +69,14 @@ def add_user(username, password, email, avatar = None):
         return "user already exists"
 
     hashed_pass = sha256_crypt.hash(password)
-    try:
-        if avatar:
-            db.execute(f"INSERT INTO user (username, password, email, avatar) "
-                   f"VALUES ('{username}', '{hashed_pass}', '{email}', '{avatar}')")
-        else:
-            db.execute(f"INSERT INTO user (username, password, email) "
-                   f"VALUES ('{username}', '{hashed_pass}', '{email}')")
-        db.commit()
-        return "ok"
-
-    except Exception:
-        db.rollback()
-        return "failed"
+    if avatar: # pragma: no cover
+        db.execute(f"INSERT INTO user (username, password, email, avatar) "
+                f"VALUES ('{username}', '{hashed_pass}', '{email}', '{avatar}')")
+    else:
+        db.execute(f"INSERT INTO user (username, password, email) "
+                f"VALUES ('{username}', '{hashed_pass}', '{email}')")
+    db.commit()
+    return "ok"
 
 
 def check_login(username, password):
@@ -97,64 +92,54 @@ def check_login(username, password):
         return "username or password is wrong!", None
 
 
-def add_profile(username, bio, status, background):
+def add_profile(username, bio, status, background='defaultbg.png'):
     db = get_db()
     try:
         db.execute(f"INSERT INTO profile (user_id, bio, status, background) "
-                         f"VALUES (SELECT id from user WHERE username = '{username}', "
-                         f"'{bio}', '{status}', '{background}')")
+                f"SELECT user.id, '{bio}', '{status}', '{background}' from user "
+                f"WHERE user.username = '{username}' ")
         db.commit()
         return "ok"
-    except Exception:
-        return "failed"
-
+    except sqlite3.IntegrityError:
+        return "invalid"
 
 def update_profile_status(user_id, status):
     db = get_db()
-    try:
-        db.execute(f"UPDATE profile SET status = '{status}' where user_id = {user_id}")
-        db.commit()
+    db.execute(f"UPDATE profile SET status = '{status}' where user_id = {user_id}")
+    db.commit()
 
-        return "ok"
-
-    except Exception:
-        return "failed"
+    return "ok"
 
 def get_user_by_id(user_id):
     db = get_db()
-    try:
-        res = db.execute(f"SELECT * FROM USER "
-                   f"WHERE id = {user_id}").fetchone()
-        
-        if res:        
-            return User(res[0], res[1], None, None, res[4])
-        return "not found"
-    except:
-        return "invalid"
+    res = db.execute(f"SELECT * FROM USER "
+                f"WHERE id = {user_id}").fetchone()
+    
+    if res:        
+        return User(res[0], res[1], None, None, res[4])
+    return "not found"
 
 
 def get_user_by_name(username):
     db = get_db()
-    try:
-        res = db.execute(f"SELECT * FROM USER "
-                   f"WHERE username = '{username}'").fetchone()
-        
-        if res:        
-            return User(res[0], res[1], None, None, res[4])
-        return "not found"
-    except:
-        return "invalid"
+
+    res = db.execute(f"SELECT * FROM USER "
+                f"WHERE username = '{username}'").fetchone()
+    
+    if res:        
+        return User(res[0], res[1], None, None, res[4])
+    return "not found"
 
 
 def get_user_profile(user_id):
     db = get_db()
     try:
         res = db.execute(f"SELECT * from profile WHERE user_id = {user_id}").fetchone()
-
-        prof = Profile(res[0], res[1], res[2], res[3], res[4])
+        prof = Profile(res[0], res[1], res[2], res[3], res[4]).__dict__
         return "ok", prof
 
     except Exception:
+        
         return "invalid", None
 
 
@@ -165,7 +150,7 @@ def get_list_of_games_per_user(user_id):
                         f"WHERE {user_id} = gL.user_id").fetchall()
     lst = []
     for i in result:
-        lst.append(Game(i[0], i[1], i[2], i[3], i[4], i[5]))
+        lst.append(Game(i[0], i[1], i[2], i[3], i[4], i[5]).__dict__)
 
     return lst
 
@@ -212,12 +197,16 @@ def get_game_genres_list(game_id):
 
 def add_game_to_list(user_id, game_id):
     db = get_db()
-    res = db.execute(f"SELECT * FROM gameList WHERE user_id={user_id} "
-                    f"AND game_id = game_id").fetchall()
-    if len(res) > 0:
+    res = db.execute(f"SELECT * FROM gameList WHERE (user_id={user_id} "
+                    f"AND game_id = {game_id})").fetchall()
+    if res:
         return "already added"
+
+    res = db.execute(f"SELECT * FROM gameList "
+                    f"").fetchall()
     db.execute(f"INSERT INTO gameList (user_id, game_id) "
                f"VALUES ({user_id}, {game_id})")
+    db.commit()
     return "ok"
 
 def get_list_of_friends(user_id):
@@ -232,26 +221,6 @@ def get_list_of_friends(user_id):
     lst = [(i[0], i[1]) for i in res]
     return lst
 
-
-def get_receiving_friend_request(user_id):
-    db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, FR.creationTime FROM user, "
-                     f"friendRequest as FR "
-                     f"WHERE (FR.receiver_id = {user_id} AND FR.sender_id = user.id)"
-                    ).fetchall()
-
-    lst = [(i[0], i[1]) for i in res]
-    return lst
-
-def get_pending_friend_request(user_id):
-    db = get_db()
-    res = db.execute(f"SELECT user.id, user.username, FR.creationTime "
-                     f"FROM user, friendRequest as FR "
-                     f"WHERE (FR.sender_id = {user_id} AND FR.receiver_id = user.id)"
-                    ).fetchall()
-
-    lst = [(i[0], i[1]) for i in res]
-    return lst
 
 
 def get_invite_from_others_message(user_id):
@@ -341,7 +310,7 @@ def get_sent_friend_requests_by_user_id(user_id):
     db = get_db()
     res = db.execute(f"SELECT * from friendRequest WHERE sender_id = {user_id}").fetchall()
     if res:
-        lst = [FriendRequest(i[0], i[1], [2], i[3]) for i in res]
+        lst = [FriendRequest(i[0], i[1], i[2], i[3]).__dict__ for i in res]
         return lst
     return None
     
@@ -350,7 +319,7 @@ def get_received_friend_requests_by_user_id(user_id):
     db = get_db()
     res = db.execute(f"SELECT * from friendRequest WHERE receiver_id = {user_id}").fetchall()
     if res:
-        lst = [FriendRequest(i[0], i[1], [2], i[3]) for i in res]
+        lst = [FriendRequest(i[0], i[1], i[2], i[3]).__dict__ for i in res]
         return lst
     return None
 

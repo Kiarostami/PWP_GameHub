@@ -10,20 +10,14 @@ class User:
         self.username = username
         self.password = password
         self.email = email
-        if avatar:
+        if avatar: # pragma: no cover
             self.avatar = avatar
-
-    def __repr__(self):
-        return self.__dict__.__str__()
-
-    def __str__(self):
-        return self.__dict__.__str__()
 
     def protected(self):
         tmp = self.__dict__
         tmp.pop('email')
         tmp.pop('password')
-        return tmp.__str__()
+        return tmp
 
 
 class Profile:
@@ -39,12 +33,6 @@ class Profile:
         self.bio = bio
         self.status = status
         self.background = background
-
-    def __repr__(self):
-        return self.__dict__.__str__()
-
-    def __str__(self):
-        return self.__dict__.__str__()
 
 
 class InviteMessage:
@@ -65,44 +53,37 @@ class InviteMessage:
         self.creationTime = ct
         self.accepted = accepted
 
-    def __repr__(self):
-        return self.__dict__.__str__()
-
-    def __str__(self):
-        return self.__dict__.__str__()
-
 
 class GameList:
     id: int = None
     user_id: int = None
     game_id: int = None
 
-    def __init__(self, glid, uid, gid):
+    def __init__(self, glid, uid, gid): # pragma: no cover
         self.id = glid
         self.user_id = uid
         self.game_id = gid
 
-    def __repr__(self):
-        return self.__dict__.__str__()
+    def __repr__(self): # pragma: no cover
+        return self.__dict__.__str__() 
 
     def __str__(self):
-        return self.__dict__.__str__()
-
+        return self.__dict__.__str__() # pragma: no cover
 
 class Genres:
     id: int = None
     game_id: int = None
     name: str = None
 
-    def __init__(self, ggid, name):
-        self.id = ggid
-        self.name = name
+    def __init__(self, ggid, name): 
+        self.id = ggid  # pragma: no cover
+        self.name = name  # pragma: no cover
 
-    def __repr__(self):
-        return self.__dict__.__str__()
+    def __repr__(self): 
+        return self.__dict__.__str__() # pragma: no cover
 
-    def __str__(self):
-        return self.__dict__.__str__()
+    def __str__(self): 
+        return self.__dict__.__str__() # pragma: no cover
 
 
 class Game:
@@ -136,17 +117,11 @@ class FriendRequest:
     receiver_id: int = None
     creationTime: str = None
 
-    def __init__(self, frid, sender_id, receiver_id, ct):
+    def __init__(self, frid, sender_id, receiver_id, ct): # pragma: no cover
         self.id = frid
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.creationTime = ct
-
-    def __repr__(self):
-        return self.__dict__.__str__()
-
-    def __str__(self):
-        return self.__dict__.__str__()
 
 
 class FriendList:
@@ -154,13 +129,13 @@ class FriendList:
     user_1_id: int = None
     user_2_id: int = None
 
-    def __init__(self, flid, user_1_id, user_2_id):
+    def __init__(self, flid, user_1_id, user_2_id): # pragma: no cover
         self.id = flid
         self.user_1_id = user_1_id
         self.user_2_id = user_2_id
-
-    def __repr__(self):
+ 
+    def __repr__(self): # pragma: no cover
         return self.__dict__.__str__()
 
-    def __str__(self):
+    def __str__(self): # pragma: no cover
         return self.__dict__.__str__()

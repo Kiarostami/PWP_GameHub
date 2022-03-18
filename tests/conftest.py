@@ -47,11 +47,27 @@ class AuthActions(object):
             '/login',
             data={'username': username, 'password': password}
         )
+    
+    def login2(self, username='test2', password='1234'):
+        return self._client.post(
+            '/login',
+            data={'username': username, 'password': password}
+        )
+
+    def login3(self, username='test3', password='1234'):
+        return self._client.post(
+            '/login',
+            data={'username': username, 'password': password}
+        )
 
     def logout(self):
         return self._client.get('/logout')
+    
+
+    def get_user_info(self, username):
+        return self._client.get("/user/uname/"+username)
 
 
 @pytest.fixture
-def auth(client):
+def auth(client) -> AuthActions:
     return AuthActions(client)
