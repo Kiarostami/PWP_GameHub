@@ -15,3 +15,5 @@ INSERT INTO game (name, publisher, description, isFree, price)
 VALUES ("DUMMYTEST", "VALVE", "Dota 2 is a multiplayer online battle arena (MOBA) video game developed and published by Valve.", true, 0);
 
 
+
+

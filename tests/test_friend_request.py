@@ -42,6 +42,8 @@ def test_add_friend_duplicate(client, auth, url, message):
     user_test2 = auth.get_user_info('test2')
     uid = (user_test2.json['payload'])['id']
     client.post(url + str(uid))
+    response = client.get("/fr/sent")
+    assert b'ok' in response.data
     response = client.post(url + str(uid))
     assert message in response.data
 

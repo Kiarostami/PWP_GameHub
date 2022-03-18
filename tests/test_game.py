@@ -21,3 +21,6 @@ def test_add_game(client, auth):
     assert b'ok' in response.data
     response = client.post("/games/add/1")
     assert b'already added' in response.data
+    response = client.get("/games")
+    print(response.data, "DASDSADASDASD")
+    assert b'ok' in response.data
