@@ -44,3 +44,13 @@ To run the application on the port of 5000:
 ```shell
 $ python3 app.py
 ```
+
+
+### TEST
+
+To test and see the coverage status, run the following commands:
+
+```shell
+$ coverage run -m pytest
+$ coverage report
+```
