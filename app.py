@@ -1,8 +1,8 @@
 import os
 
-import API
+import api
 
-app = API.create_app()
+app = api.create_app()
 
 
 if __name__ == '__main__':
