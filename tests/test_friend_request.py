@@ -1,6 +1,6 @@
 import pytest
 from flask import session
-from API.db import get_db
+from api.db import get_db
 import json
 
 

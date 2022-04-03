@@ -1,10 +1,10 @@
 from flask import (Blueprint, jsonify, session)
 
-from API.db import get_sent_friend_requests_by_user_id
-from API.db import get_received_friend_requests_by_user_id
-from API.db import add_friend_req
-from API.db import delete_friend_req
-from API.db import accept_friend_request
+from api.db import get_sent_friend_requests_by_user_id
+from api.db import get_received_friend_requests_by_user_id
+from api.db import add_friend_req
+from api.db import delete_friend_req
+from api.db import accept_friend_request
 
 bp = Blueprint("friend_request", __name__, url_prefix="/fr")
 

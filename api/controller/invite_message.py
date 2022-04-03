@@ -2,15 +2,15 @@ from flask import (Blueprint, jsonify, session)
 from datetime import datetime
 
 
-from API.db import get_invite_from_others_message
-from API.db import get_invite_to_others_message
-from API.db import get_invite_msg_by_id
-from API.db import update_invite_msg_by_id
-from API.db import create_invite_msg
-from API.db import delete_invite_msg
+from api.db import get_invite_from_others_message
+from api.db import get_invite_to_others_message
+from api.db import get_invite_msg_by_id
+from api.db import update_invite_msg_by_id
+from api.db import create_invite_msg
+from api.db import delete_invite_msg
 
 
-from API.models import InviteMessage
+from api.models import InviteMessage
 
 
 bp = Blueprint("invite_message", __name__, url_prefix="/im")

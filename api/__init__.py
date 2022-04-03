@@ -3,14 +3,14 @@ import os
 from flask import Flask
 
 
-from API.controller import generic
-from API.controller import user
-from API.controller import game
-from API.controller import auth
-from API.controller import invite_message
-from API.controller import freind_request
+from api.controller import generic
+from api.controller import user
+from api.controller import game
+from api.controller import auth
+from api.controller import invite_message
+from api.controller import freind_request
 
-from API import db
+from api import db
 
 def create_app(test_config=None):
     # create and configure the app

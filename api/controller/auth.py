@@ -3,8 +3,8 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from API.db import check_login
-from API.db import add_user
+from api.db import check_login
+from api.db import add_user
 
 bp = Blueprint("auth", __name__)
 

@@ -7,12 +7,12 @@ from flask.cli import with_appcontext
 
 from passlib.hash import sha256_crypt
 
-from API.models import User
-from API.models import Profile
-from API.models import Game
-from API.models import Genres
-from API.models import InviteMessage
-from API.models import FriendRequest
+from api.models import User
+from api.models import Profile
+from api.models import Game
+from api.models import Genres
+from api.models import InviteMessage
+from api.models import FriendRequest
 
 def get_db():
     if 'db' not in g:

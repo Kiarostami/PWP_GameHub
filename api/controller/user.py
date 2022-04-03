@@ -2,15 +2,15 @@ from flask import (
     Blueprint, jsonify, session
 )
 
-from API.db import get_list_of_games_per_user
-from API.db import get_list_of_friends
-from API.db import get_user_profile
-from API.db import get_user_by_id
-from API.db import get_user_by_name
-from API.db import add_profile
-from API.db import update_profile_status
+from api.db import get_list_of_games_per_user
+from api.db import get_list_of_friends
+from api.db import get_user_profile
+from api.db import get_user_by_id
+from api.db import get_user_by_name
+from api.db import add_profile
+from api.db import update_profile_status
 
-from API.models import User
+from api.models import User
 
 bp = Blueprint("user", __name__)
 
