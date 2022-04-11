@@ -1,6 +1,6 @@
+import json
 import pytest
 from api.db import get_db
-import json
 
 
 def test_register(client, app):
@@ -16,8 +16,6 @@ def test_register(client, app):
             "SELECT * FROM user WHERE username = 'a'",
         ).fetchone() is not None
     
-
-
 
 @pytest.mark.parametrize(('username', 'password', 'email', 'message'), (
     ('', '', '',b'invalid'),
@@ -39,12 +37,14 @@ def test_login(client, auth):
     response = auth.login()
     assert response.headers['Content-Type'] == 'application/json'
     assert b'ok' in response.data
+
+    token = json.loads(response.data.decode())['access_token']
     
     assert client.get('/token_test', 
-                headers={"Authorization": "Bearer " + json.loads(response.data.decode())['access_token']}
+                headers={"Authorization": "Bearer " + token}
                 ).status_code == 200
     assert client.get('/token_test',
-                headers={"Authorization": "Bearer 12" + json.loads(response.data.decode())['access_token']}
+                headers={"Authorization": "Bearer 12" + token}
                 ).status_code >= 400
 
 
@@ -56,4 +56,3 @@ def test_login_validate_input(auth, username, password, message):
     response = auth.login(username, password)
     assert message in response.data
     
-

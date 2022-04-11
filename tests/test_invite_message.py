@@ -1,8 +1,3 @@
-import aifc
-from urllib import response
-import pytest
-from flask import session
-from api.db import get_db
 import json
 
 
@@ -35,10 +30,6 @@ def test_get_and_create(client, auth):
     response = client.post(url + "/1", headers={"Authorization": "Bearer " + token}, json={"receiver_id": 100, "game_id": 1, "suggestedTime": "2022-02-16 12:11:24"})
     assert response.status_code == 404
 
-    # # invalid suggestedTime
-    # response = client.post(url + "/1", headers={"Authorization": "Bearer " + token}, json={"receiver_id": 2, "game_id": 1, "suggestedTime": "2022-02-16 12:11:24:00"})
-    # assert response.status_code == 400
-
     # accepted
     response = client.post(url + "/1", headers={"Authorization": "Bearer " + token}, json={"receiver_id": 2, "game_id": 1, "suggestedTime": "2022-02-16 12:11:24"})
     assert response.status_code == 201
@@ -46,3 +37,70 @@ def test_get_and_create(client, auth):
     response = client.get(url + "/1", headers={"Authorization": "Bearer " + token})
     assert response.status_code == 200
 
+
+def test_delete_invite_message(client, auth):
+    url = "/invitation"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+
+    # create
+    response = client.post(url + "/1", headers={"Authorization": "Bearer " + token}, json={"receiver_id": 2, "game_id": 1, "suggestedTime": "2022-02-16 12:11:24"})
+    assert response.status_code == 201
+
+    # unauthorized
+    response = client.delete(url + "/2/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+
+    # invite msg not found
+    response = client.delete(url + "/1/100", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 404
+
+    # delete unauthorized
+    response = client.delete(url + "/1/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+
+    # delete
+    response = client.delete(url + "/1/2", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
+
+
+def test_update_invite_message(client, auth):
+    url = "/invitation"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+
+    # create
+    response = client.post(url + "/1", headers={"Authorization": "Bearer " + token}, json={"receiver_id": 2, "game_id": 1, "suggestedTime": "2022-02-16 12:11:24"})
+    assert response.status_code == 201
+
+    response = auth.login2()
+    token2 = json.loads(response.data.decode())['access_token']
+
+    # unauthorized
+    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+
+    # not found
+    response = client.put(url + "/2/100", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 404
+
+    # invalid json body 
+    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 400
+
+    # invalid json body 
+    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token2}, json={"acceptedXX": True})
+    assert response.status_code == 400
+
+    # invalid accepted value
+    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token2}, json={"accepted": "no"})
+    assert response.status_code == 400
+
+    # invalid user as receiver 
+    response = client.put(url + "/1/2", headers={"Authorization": "Bearer " + token}, json={"accepted": True})
+    assert response.status_code == 400
+
+    # valid update
+    response = client.put(url + "/2/2", headers={"Authorization": "Bearer " + token2}, json={"accepted": True})
+    print(response.data)
+    assert response.status_code == 200

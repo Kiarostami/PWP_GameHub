@@ -49,6 +49,8 @@ def test_games(client, auth):
     assert response.status_code == 404
     response = client.post('/user/2/games/1', headers={"Authorization": "Bearer " + token})
     assert response.status_code == 200
+    response = client.post('/user/2/games/1', headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 400
     response = client.get('/user/2/games', headers={"Authorization": "Bearer " + token})
     assert response.status_code == 200
     response = client.post('/user/2000/games/1', headers={"Authorization": "Bearer " + token})
