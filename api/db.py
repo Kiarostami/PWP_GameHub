@@ -126,16 +126,12 @@ def get_user_by_id(user_id):
 
 def get_user_profile(user_id):
     db = get_db()
-    try:
-        res = db.execute(f"SELECT * from profile WHERE user_id = {user_id}").fetchone()
-        if res:
-            prof = Profile(res[0], res[1], res[2], res[3], res[4])
-            return "ok", prof
-        return "not found", None
 
-    except Exception:
-        
-        return "invalid", None
+    res = db.execute(f"SELECT * from profile WHERE user_id = {user_id}").fetchone()
+    if res:
+        prof = Profile(res[0], res[1], res[2], res[3], res[4])
+        return "ok", prof
+    return "not found", None
 
 
 def check_user_has_game(user_id, game_id):
@@ -201,13 +197,6 @@ def get_game_genres_list(game_id):
 
 def add_game_to_list(user_id, game_id):
     db = get_db()
-    res = db.execute(f"SELECT * FROM gameList WHERE (user_id={user_id} "
-                    f"AND game_id = {game_id})").fetchall()
-    if res:
-        return "already added"
-
-    res = db.execute(f"SELECT * FROM gameList "
-                    f"").fetchall()
     db.execute(f"INSERT INTO gameList (user_id, game_id) "
                f"VALUES ({user_id}, {game_id})")
     db.commit()
@@ -280,20 +269,17 @@ def update_invite_msg_by_id(msg_id, status):
                f"WHERE IM.id = {msg_id}"
               )
     db.commit()
+    return "ok"
 
-    res = db.execute(f"SELECT SEN.id, SEN.username, REC.id, REC.username, game.id, "
-                     f"game.name, IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
-                     f"FROM user AS SEN, user AS REC, game, inviteMessage as IM "
-                     f"WHERE (IM.id = {msg_id} AND REC.id = IM.receiver_id "
-                     f"AND game.id = IM.game_id AND SEN.id = IM.sender_id)"
+
+def validate_invitation_receiver(user_id, msg_id):
+    db = get_db()
+    res = db.execute(f"SELECT * FROM inviteMessage as IM "
+                     f"WHERE (IM.id = {msg_id} AND IM.receiver_id = {user_id})"
                     ).fetchone()
     if res:
-        im = InviteMessage(res[6], res[4], res[0], res[2], res[7], res[8], res[9])
-        im.game_name = res[5]
-        im.receiver_username = res[3]
-        im.sender_username = res[1]
-        return (im)
-    return None
+        return True
+    return False
 
 
 def create_invite_msg(im: InviteMessage):

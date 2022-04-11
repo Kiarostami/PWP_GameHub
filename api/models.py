@@ -104,10 +104,10 @@ class Game:
         self.price = price
         self.genresList = genresList
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return self.__dict__.__str__()
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return self.__dict__.__str__()
 
 

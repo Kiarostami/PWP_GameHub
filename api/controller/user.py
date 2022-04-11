@@ -4,8 +4,10 @@ from flask import (
 
 from flask_jwt_extended import (jwt_required, get_jwt_identity
 )
-
-from api.db import add_game_to_list, check_user_has_game, get_game_by_name_or_id, get_list_of_games_per_user
+from api.db import add_game_to_list
+from api.db import check_user_has_game 
+from api.db import get_game_by_name_or_id
+from api.db import get_list_of_games_per_user
 from api.db import get_list_of_friends
 from api.db import get_user_profile
 from api.db import get_user_by_id

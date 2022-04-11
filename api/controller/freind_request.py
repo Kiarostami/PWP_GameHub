@@ -92,21 +92,8 @@ def add_friend_request(user_id, user2_id):
 
     friend_request = add_friend_req(user_id, user2_id)
 
-    if friend_request == "ok":
-        response["status"] = "ok"
-        return jsonify(response), 200
-
-    elif friend_request == "already friends":
-        response["status"] = "already friends"
-        return jsonify(response), 200
-
-    elif friend_request == "already sent":
-        response["status"] = "already sent"
-        return jsonify(response), 200
-
-    else:
-        response["status"] = "accepted"
-        return jsonify(response), 200
+    response["status"] = friend_request
+    return jsonify(response), 200
 
     
 @bp.route("/<int:user_id>/accept/<int:friend_request_id>", methods=["POST"])

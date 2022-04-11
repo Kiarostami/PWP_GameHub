@@ -4,7 +4,7 @@ from datetime import datetime
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 
-from api.db import get_game_by_name_or_id, get_invite_from_others_message, get_user_by_id
+from api.db import get_game_by_name_or_id, get_invite_from_others_message, get_user_by_id, validate_invitation_receiver
 from api.db import get_invite_to_others_message
 from api.db import get_invite_msg_by_id
 from api.db import update_invite_msg_by_id
@@ -87,7 +87,7 @@ def create_invite_message(user_id):
     if get_user_by_id(request.json["receiver_id"]) == "not found":
         response["status"] = "user not exists"
         return jsonify(response), 404
-        
+
 
     inv_msg = InviteMessage(None, request.json["game_id"],
                             user_id, request.json["receiver_id"], 
@@ -120,9 +120,14 @@ def delete_invite_message(user_id, invite_id):
         return jsonify(response), 401
 
     # check if the invitation is valid
-    if get_invite_msg_by_id(invite_id) == "not found":
-        response["status"] = "bad request"
-        return jsonify(response), 400
+    if get_invite_msg_by_id(invite_id) == None:
+        response["status"] = "invitation not exists"
+        return jsonify(response), 404
+
+    # check if the invitation is from the user
+    if not (get_invite_msg_by_id(invite_id).receiver_id == user_id or get_invite_msg_by_id(invite_id).sender_id == user_id):
+        response["status"] = "unauthorized"
+        return jsonify(response), 401
 
     delete_invite_msg(invite_id)
     response["status"] = "ok"
@@ -144,30 +149,35 @@ def update_invite_message(user_id, invite_id):
         "status": "",
         "payload": {}
     }
-
+    
     # check user authorization
     if user_id != get_jwt_identity()["id"]:
         response["status"] = "unauthorized"
         return jsonify(response), 401
 
     # check if the invitation is valid
-    if get_invite_msg_by_id(invite_id) == "not found":
-        response["status"] = "bad request"
-        return jsonify(response), 400
+    if get_invite_msg_by_id(invite_id) == None:
+        response["status"] = "not found"
+        return jsonify(response), 404
 
     # check if the request body is empty
     if not request.json:
-        response["status"] = "bad request"
+        response["status"] = "body has no data"
         return jsonify(response), 400
 
     # check if the request body is valid
-    if not all(key in request.json for key in ("accepted")):
-        response["status"] = "bad request"
+    if not request.json.get("accepted", False):
+        response["status"] = "body has no key accepted"
         return jsonify(response), 400
 
     # check if the accepted is valid
     if not isinstance(request.json["accepted"], bool):
-        response["status"] = "bad request"
+        response["status"] = "accepted is not a boolean"
+        return jsonify(response), 400
+
+    # validate receiver
+    if not validate_invitation_receiver(user_id, invite_id):
+        response["status"] = "invalid receiver"
         return jsonify(response), 400
 
     update_invite_msg_by_id(invite_id, request.json["accepted"])
