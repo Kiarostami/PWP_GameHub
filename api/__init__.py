@@ -1,6 +1,8 @@
 import os
 
 from flask import Flask
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
 
 
 from api.controller import generic
@@ -15,6 +17,13 @@ from api import db
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    
+    # Setup the Flask-JWT-Extended extension
+    app.config["JWT_SECRET_KEY"] = "aRandomSecretString!Ikonw!"
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+
+    JWTManager(app)
+    
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'db.sqlite'),

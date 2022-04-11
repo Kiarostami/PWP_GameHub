@@ -2,6 +2,8 @@ import os
 import tempfile
 
 import pytest
+
+
 from api import create_app
 from api.db import get_db, init_db
 
@@ -59,9 +61,6 @@ class AuthActions(object):
             '/login',
             data={'username': username, 'password': password}
         )
-
-    def logout(self):
-        return self._client.get('/logout')
     
 
     def get_user_info(self, username):

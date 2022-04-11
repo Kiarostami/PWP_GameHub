@@ -92,22 +92,26 @@ def check_login(username, password):
         return "username or password is wrong!", None
 
 
-def add_profile(username, bio, status, background='defaultbg.png'):
+def add_profile(uid, bio, status, background='defaultbg.png'):
     db = get_db()
-    try:
-        db.execute(f"INSERT INTO profile (user_id, bio, status, background) "
-                f"SELECT user.id, '{bio}', '{status}', '{background}' from user "
-                f"WHERE user.username = '{username}' ")
-        db.commit()
-        return "ok"
-    except sqlite3.IntegrityError:
-        return "invalid"
+    db.execute(f"INSERT INTO profile (user_id, bio, status, background) "
+                f"VALUES({uid}, '{bio}', '{status}', '{background}') "
+            )
+    db.commit()
+    return "ok"
+
 
 def update_profile_status(user_id, status):
     db = get_db()
     db.execute(f"UPDATE profile SET status = '{status}' where user_id = {user_id}")
     db.commit()
+    return "ok"
 
+
+def update_profile_bio(user_id, bio):
+    db = get_db()
+    db.execute(f"UPDATE profile SET bio = '{bio}' where user_id = {user_id}")
+    db.commit()
     return "ok"
 
 def get_user_by_id(user_id):
@@ -120,27 +124,26 @@ def get_user_by_id(user_id):
     return "not found"
 
 
-def get_user_by_name(username):
-    db = get_db()
-
-    res = db.execute(f"SELECT * FROM USER "
-                f"WHERE username = '{username}'").fetchone()
-    
-    if res:        
-        return User(res[0], res[1], None, None, res[4])
-    return "not found"
-
-
 def get_user_profile(user_id):
     db = get_db()
     try:
         res = db.execute(f"SELECT * from profile WHERE user_id = {user_id}").fetchone()
-        prof = Profile(res[0], res[1], res[2], res[3], res[4]).__dict__
-        return "ok", prof
+        if res:
+            prof = Profile(res[0], res[1], res[2], res[3], res[4])
+            return "ok", prof
+        return "not found", None
 
     except Exception:
         
         return "invalid", None
+
+
+def check_user_has_game(user_id, game_id):
+    db = get_db()
+    res = db.execute(f"SELECT * from gameList where user_id = {user_id} and game_id = {game_id}").fetchone()
+    if res:
+        return True
+    return False
 
 
 def get_list_of_games_per_user(user_id):
@@ -195,6 +198,7 @@ def get_game_genres_list(game_id):
 
     return genre_list
 
+
 def add_game_to_list(user_id, game_id):
     db = get_db()
     res = db.execute(f"SELECT * FROM gameList WHERE (user_id={user_id} "
@@ -208,6 +212,7 @@ def add_game_to_list(user_id, game_id):
                f"VALUES ({user_id}, {game_id})")
     db.commit()
     return "ok"
+
 
 def get_list_of_friends(user_id):
     db = get_db()
@@ -226,27 +231,30 @@ def get_list_of_friends(user_id):
 def get_invite_from_others_message(user_id):
     db = get_db()
     res = db.execute(f"SELECT user.id, user.username, game.id, game.name, "
-                     f"IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+                     f"IM.id, IM.suggestedTime, IM.creationTime, IM.accepted, "
+                     f"IM.sender_id, IM.receiver_id "
                      f"FROM user, game, inviteMessage as IM "
                      f"WHERE (IM.receiver_id = {user_id} AND user.id = IM.sender_id "
                      f"AND game.id = IM.game_id)"
                     ).fetchall()
 
-    lst = [(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]) for i in res]
+    lst = [InviteMessage(i[4], i[2], i[8], i[9], i[5], i[6], i[7]).__dict__ for i in res]
     return lst
 
 
 def get_invite_to_others_message(user_id):
     db = get_db()
     res = db.execute(f"SELECT user.id, user.username, game.id, game.name, "
-                     f"IM.id, IM.suggestedTime, IM.creationTime, IM.accepted "
+                     f"IM.id, IM.suggestedTime, IM.creationTime, IM.accepted, "
+                     f"IM.sender_id, IM.receiver_id "
                      f"FROM user, game, inviteMessage as IM "
                      f"WHERE (IM.sender_id = {user_id} AND user.id = IM.receiver_id "
                      f"AND game.id = IM.game_id)"
                     ).fetchall()
     
-    lst = [(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7]) for i in res]
+    lst = [InviteMessage(i[4], i[2], i[8], i[9], i[5], i[6], i[7]).__dict__ for i in res]
     return lst
+
 
 def get_invite_msg_by_id(msg_id):
     db = get_db()
@@ -323,6 +331,7 @@ def get_received_friend_requests_by_user_id(user_id):
         return lst
     return None
 
+
 def check_if_friends(user_1_id, user_2_id):
     db = get_db()
     res = db.execute(f"SELECT * FROM friendList "
@@ -341,11 +350,12 @@ def check_if_pending_request(user_1_id, user_2_id):
         return res[0]
     return False
      
+
 def add_friend_req(sender_id, receiver_id):
     db = get_db()
     cf = check_if_friends(sender_id, receiver_id)
     if cf:
-        return "already friend"
+        return "already friends"
     cpr = check_if_pending_request(sender_id, receiver_id)
     # CPR: INT 
     if cpr:
@@ -365,14 +375,19 @@ def add_friend_req(sender_id, receiver_id):
     db.commit()
     return "ok"
 
-def delete_friend_req(fr_id, user_id):
-    db = get_db()
-    
-    db.execute(f"DELETE FROM friendRequest WHERE (id = {fr_id} AND receiver_id = {user_id}) ")
-    db.commit()
-    return "ok"
 
-def accept_friend_request(fr_id, user_id):
+def delete_friend_req(user_id, fr_id):
+    db = get_db()
+    # check if friend request exists
+    res = db.execute(f"SELECT * FROM friendRequest WHERE id = {fr_id}").fetchone()
+    if res:
+        db.execute(f"DELETE FROM friendRequest WHERE (id = {fr_id} AND receiver_id = {user_id}) ")
+        db.commit()
+        return "ok"
+    return "not found"
+
+
+def accept_friend_request(user_id, fr_id):
     db = get_db()
     res = db.execute(f"SELECT * FROM friendRequest "
                      f"WHERE id = {fr_id} AND receiver_id = {user_id} "
@@ -385,4 +400,16 @@ def accept_friend_request(fr_id, user_id):
         db.commit()
         return "accepted"
 
+    return "not found"
+
+
+def delete_friend_from_friend_list(user1_id, user2_id):
+    db = get_db()
+    # check if user_1 is in user_2's friend list and vice versa
+    res = check_if_friends(user1_id, user2_id)
+    if res:
+        db.execute(f"DELETE FROM friendList WHERE (user_1_id = {user1_id} AND user_2_id = {user2_id}) "
+                   f"OR (user_1_id = {user2_id} AND user_2_id = {user1_id})")
+        db.commit()
+        return "ok"
     return "not found"

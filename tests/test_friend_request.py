@@ -1,99 +1,149 @@
 import pytest
-from flask import session
-from api.db import get_db
 import json
 
 
-@pytest.mark.parametrize(('url', 'message'), (
-    ("/fr/sent", b'login'),
-    ('/fr/received', b'login')
-))
-def test_get_methods_before_login(client, app, url, message):
-    response = client.get(url)
-    assert message in response.data
+def test_accept_friend_double_side(client, auth):
+    url = "/friends/"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+    response = auth.login3()
+    token3 = json.loads(response.data.decode())['access_token']
+    response = client.post(url + "3/1", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 200
+    
+    # unauthorized
+    response = client.post(url + "2/accept/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+
+    # not found
+    response = client.post(url + "1/accept/100", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 404
+
+    # accepted
+    response = client.post(url + "1/accept/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
 
 
-@pytest.mark.parametrize(('url', 'message'), (
-    ("/fr/sent", b'ok'),
-    ('/fr/received', b'ok')
-))
-def test_get_methods(client, auth, url, message):
-    auth.login()
-    response = client.get(url)
-    assert message in response.data
+def test_cancel_friend_request(client, auth):
+    url = "/friends/"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+    response = auth.login3()
+    token3 = json.loads(response.data.decode())['access_token']
+
+    # send a friend request
+    response = client.post(url + "3/1", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 200
+    # cancel the request: unauthorized
+    response = client.delete(url + "3/cancel/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+    # cancel the request: not found
+    response = client.delete(url + "3/cancel/100", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 404
+    # cancel the request: accepted
+    response = client.delete(url + "3/cancel/1", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 200
 
 
-@pytest.mark.parametrize(('url', 'message'), (
-    ("/fr/", b'ok'),
-))
-def test_add_friend(client, auth, url, message):
-    auth.login()
-    user_test2 = auth.get_user_info('test2')
-    uid = (user_test2.json['payload'])['id']
-    response = client.post(url + str(uid))
-    assert message in response.data
+def test_delete_from_friends(client, auth):
+    url = "/friends/"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+    response = auth.login3()
+    token3 = json.loads(response.data.decode())['access_token']
+    response = client.post(url + "3/1", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 200
+    # accepted
+    response = client.post(url + "1/3", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
+    response = client.delete(url + "3/remove/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+    response = client.delete(url + "1/remove/3", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
+    response = client.delete(url + "3/remove/1", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 404
+    
 
+def test_reject_from_friends(client, auth):
+    url = "/friends/"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+    response = auth.login3()
+    token3 = json.loads(response.data.decode())['access_token']
+    response = client.post(url + "3/1", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 200
 
-@pytest.mark.parametrize(('url', 'message'), (
-    ("/fr/", b'already sent'),
-))
-def test_add_friend_duplicate(client, auth, url, message):
-    auth.login()
-    user_test2 = auth.get_user_info('test2')
-    uid = (user_test2.json['payload'])['id']
-    client.post(url + str(uid))
-    response = client.get("/fr/sent")
-    assert b'ok' in response.data
-    response = client.post(url + str(uid))
-    assert message in response.data
+    response = client.delete(url + "3/reject/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+    response = client.delete(url + "1/reject/3", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 404
+    response = client.delete(url + "1/reject/1", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
 
 
 def test_add_friend_double_side(client, auth):
-    url = "/fr/"
-    auth.login()
-    user_test2 = auth.get_user_info('test2')
-    uid = (user_test2.json['payload'])['id']
-    response = client.post(url + str(uid))
-    assert b'ok' in response.data
-    auth.logout()
-    auth.login2()
-    user_test1 = auth.get_user_info('test')
-    uid = (user_test1.json['payload'])['id']
-    response = client.post(url + str(uid))
-    assert b'accepted' in response.data
-    response = client.post(url + str(uid))
-    assert b'already friend' in response.data
+    url = "/friends/"
+    response = auth.login()
+    token = json.loads(response.data.decode())['access_token']
+    response = client.get(url + "1/pending", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 404
+    response = client.get(url + "2/pending", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 401
+    response = auth.login2()
+    token2 = json.loads(response.data.decode())['access_token']
+    response = client.post(url + "1/2", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 401
+    response = client.get(url + "2/sent", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 404
+    response = client.get(url + "2000/sent", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 401
+    response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 200
+    response = client.get(url + "1/pending", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
+    response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 200
+    response = client.get(url + "2/sent", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 200
+    response = client.post(url + "1/2", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 200
+    response = client.post(url + "1/200", headers={"Authorization": "Bearer " + token})
+    assert response.status_code == 404
+    response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+    assert response.status_code == 200
+    response = client.get("/user/1/friends", headers={"Authorization": "Bearer " + token})
 
 
-def test_delete_friend_req(client, auth):
-    url = "/fr/"
-    auth.login()
-    user_test2 = auth.get_user_info('test2')
-    uid = (user_test2.json['payload']['id'])
-    response = client.post(url + str(uid))
-    assert b'ok' in response.data
-    auth.logout()
-    auth.login2()
-    user_test1 = auth.get_user_info('test')
-    uid = (user_test1.json['payload'])
-    response = client.get("/fr/received")
-    im = response.json['payload'][0]
-    response = client.delete("/fr/" + str(im['id']))
+
+
+# def test_cancel_friend_request(client, auth):
+#     url = "/friends/"
+#     response = auth.login()
+#     token = json.loads(response.data.decode())['access_token']
+#     response = auth.login2()
+#     token2 = json.loads(response.data.decode())['access_token']
+
+#     # user 2 sent a friend request to user 1
+#     response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 401
     
-    assert b'ok' in response.data
+#     response = client.get(url + "2/sent", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 404
+#     response = client.get(url + "2000/sent", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 401
+#     response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 200
+#     response = client.get(url + "1/pending", headers={"Authorization": "Bearer " + token})
+#     assert response.status_code == 200
+#     response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 200
+#     response = client.get(url + "2/sent", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 200
+#     response = client.post(url + "1/2", headers={"Authorization": "Bearer " + token})
+#     assert response.status_code == 200
+#     response = client.post(url + "1/200", headers={"Authorization": "Bearer " + token})
+#     assert response.status_code == 404
+#     response = client.post(url + "2/1", headers={"Authorization": "Bearer " + token2})
+#     assert response.status_code == 200
+#     response = client.get("/user/1/friends", headers={"Authorization": "Bearer " + token})
 
-def test_accept_friend_double_side(client, auth):
-    url = "/fr/"
-    auth.login()
-    user_test2 = auth.get_user_info('test2')
-    uid = (user_test2.json['payload'])['id']
-    response = client.post(url + str(uid))
-    assert b'ok' in response.data
-    auth.logout()
-    auth.login2()
-    response = client.get("/fr/received")
-    im = response.json['payload'][0]
-    response = client.put("/fr/" + str(im['id']))
-    assert b'accepted' in response.data
-    response = client.put("/fr/" + str(im['id']))
-    assert b'not found' in response.data

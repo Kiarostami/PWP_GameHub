@@ -1,13 +1,14 @@
 import pytest
-from flask import session
 from api.db import get_db
+import json
 
 
 def test_register(client, app):
-    assert client.post('/addUser').status_code == 200
+    assert client.post('/signup').status_code == 400
     response = client.post(
-        '/addUser', data={'username': 'a', 'password': 'a', 'email': "my@email.com"}
+        '/signup', data={'username': 'a', 'password': 'a', 'email': "my@email.com"}
     )
+    print(response.data)
     assert b'ok' in response.data
 
     with app.app_context():
@@ -19,14 +20,14 @@ def test_register(client, app):
 
 
 @pytest.mark.parametrize(('username', 'password', 'email', 'message'), (
-    ('', '', '',b'invalid parameters'),
-    ('a', '', 'email', b'invalid parameters'),
-    ("abc", "DEF", "ghi", b"invalid parameters"),
+    ('', '', '',b'invalid'),
+    ('a', '', 'email', b'invalid'),
+    ("abc", "DEF", "ghi", b"invalid"),
     ('test', 'test', 'djda@test.com',b'user already exist'),
 ))
 def test_register_validate_input(client, username, password, email, message):
     response = client.post(
-        '/addUser',
+        '/signup',
         data={'username': username, 'password': password, 'email': email}
     )
     print(response.data)
@@ -34,14 +35,17 @@ def test_register_validate_input(client, username, password, email, message):
 
 
 def test_login(client, auth):
-    assert client.post('/login').status_code == 200
+    assert client.post('/login').status_code == 400
     response = auth.login()
     assert response.headers['Content-Type'] == 'application/json'
-
-    with client:
-        client.get('/profile')
-        assert session['id'] == 1
-        assert session['user'] == 'test'
+    assert b'ok' in response.data
+    
+    assert client.get('/token_test', 
+                headers={"Authorization": "Bearer " + json.loads(response.data.decode())['access_token']}
+                ).status_code == 200
+    assert client.get('/token_test',
+                headers={"Authorization": "Bearer 12" + json.loads(response.data.decode())['access_token']}
+                ).status_code >= 400
 
 
 @pytest.mark.parametrize(('username', 'password', 'message'), (
@@ -52,10 +56,4 @@ def test_login_validate_input(auth, username, password, message):
     response = auth.login(username, password)
     assert message in response.data
     
-    
-def test_logout(client, auth):
-    auth.login()
 
-    with client:
-        auth.logout()
-        assert 'id' not in session
