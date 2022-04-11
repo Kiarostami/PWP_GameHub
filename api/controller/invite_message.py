@@ -3,6 +3,8 @@ from datetime import datetime
 
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
+from jsonschema import validate, ValidationError
+
 
 from api.db import get_game_by_name_or_id, get_invite_from_others_message, get_user_by_id, validate_invitation_receiver
 from api.db import get_invite_to_others_message
@@ -74,8 +76,11 @@ def create_invite_message(user_id):
         return jsonify(response), 400
 
     # check if the request body is valid
-    if not all(key in request.json for key in ("game_id", "receiver_id", "suggestedTime")):
+    try:
+        validate(request.json, InviteMessage.new_json_schema())
+    except ValidationError as e:
         response["status"] = "bad request"
+        response["payload"] = e.message
         return jsonify(response), 400
 
     # check if the game_id is valid
@@ -125,7 +130,8 @@ def delete_invite_message(user_id, invite_id):
         return jsonify(response), 404
 
     # check if the invitation is from the user
-    if not (get_invite_msg_by_id(invite_id).receiver_id == user_id or get_invite_msg_by_id(invite_id).sender_id == user_id):
+    if not (get_invite_msg_by_id(invite_id).receiver_id == user_id or 
+            get_invite_msg_by_id(invite_id).sender_id == user_id):
         response["status"] = "unauthorized"
         return jsonify(response), 401
 

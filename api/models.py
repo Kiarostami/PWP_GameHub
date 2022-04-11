@@ -58,20 +58,6 @@ class Profile:
         self.status = status
         self.background = background
     
-    @staticmethod
-    def new_json_schema():
-        return {
-            "type": "object",
-            "required": ["user_id", "bio", "status"],
-            "properties": {
-                "id": {"type": "integer"},
-                "user_id": {"type": "integer"},
-                "bio": {"type": "string"},
-                "status": {"type": "string"},
-                "background": {"type": "string"}
-            }
-        }
-
 
 class InviteMessage:
     id: int = None
@@ -90,6 +76,19 @@ class InviteMessage:
         self.suggestedTime = st
         self.creationTime = ct
         self.accepted = accepted
+
+    @staticmethod
+    def new_json_schema():
+        # return the jsonschema for invite message
+        return {
+            "type": "object",
+            "properties": {
+                "game_id": {"type": "integer"},
+                "receiver_id": {"type": "integer"},
+                "suggestedTime": {"type": "string"}
+            },
+            "required": ["game_id", "receiver_id", "suggestedTime"]
+        }
 
 
 class GameList:
