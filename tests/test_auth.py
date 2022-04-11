@@ -6,7 +6,7 @@ from api.db import get_db
 def test_register(client, app):
     assert client.post('/signup').status_code == 400
     response = client.post(
-        '/signup', data={'username': 'a', 'password': 'a', 'email': "my@email.com"}
+        '/signup', json={'username': 'a', 'password': 'a', 'email': "my@email.com"}
     )
     print(response.data)
     assert b'ok' in response.data
@@ -17,6 +17,8 @@ def test_register(client, app):
         ).fetchone() is not None
     
 
+
+
 @pytest.mark.parametrize(('username', 'password', 'email', 'message'), (
     ('', '', '',b'invalid'),
     ('a', '', 'email', b'invalid'),
@@ -26,10 +28,10 @@ def test_register(client, app):
 def test_register_validate_input(client, username, password, email, message):
     response = client.post(
         '/signup',
-        data={'username': username, 'password': password, 'email': email}
+        json={'username': username, 'password': password, 'email': email}
     )
     print(response.data)
-    assert message in response.data
+    assert message in response.data or message == response.status_code
 
 
 def test_login(client, auth):

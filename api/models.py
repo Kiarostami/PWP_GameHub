@@ -19,6 +19,30 @@ class User:
         tmp.pop('password')
         return tmp
 
+    @staticmethod
+    def signup_json_schema():
+        return {
+            "type": "object",
+            "properties": {
+                "username": {"type": "string"},
+                "password": {"type": "string"},
+                "email": {"type": "string"}
+            },
+            "required": ["username", "password", "email"]
+        }
+
+    @staticmethod
+    def login_json_schema():
+        return {
+            "type": "object",
+            "properties": {
+                "username": {"type": "string"},
+                "password": {"type": "string"},
+                "email": {"type": "string"}
+            },
+            "required": ["username", "password"]
+        }
+
 
 class Profile:
     id: int = None
@@ -33,6 +57,20 @@ class Profile:
         self.bio = bio
         self.status = status
         self.background = background
+    
+    @staticmethod
+    def new_json_schema():
+        return {
+            "type": "object",
+            "required": ["user_id", "bio", "status"],
+            "properties": {
+                "id": {"type": "integer"},
+                "user_id": {"type": "integer"},
+                "bio": {"type": "string"},
+                "status": {"type": "string"},
+                "background": {"type": "string"}
+            }
+        }
 
 
 class InviteMessage:
