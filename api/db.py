@@ -186,11 +186,11 @@ def get_game_by_name_or_id(name_or_id):
 
 def get_game_genres_list(game_id):
     db = get_db()
-    res = db.execute(f"SELECT genre.* FROM genre "
-                      f"LEFT JOIN gameGenresList as GGL ON GGL.genre_id = genre.id "
-                      f"WHERE GGL.game_id = {game_id}").fetchall()
+    res = db.execute(f"SELECT genre.* FROM genre, "
+                      f"gameGenresList as GGL "
+                      f"WHERE GGL.game_id = {game_id} AND GGL.genre_id = genre.id").fetchall()
 
-    genre_list = [Genres(i[0], i[1]) for i in res]
+    genre_list = [Genres(i[0], i[1], game_id) for i in res]
 
     return genre_list
 

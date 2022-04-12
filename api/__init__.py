@@ -13,6 +13,7 @@ from api.controller import game
 from api.controller import auth
 from api.controller import invite_message
 from api.controller import freind_request
+from api.controller import genres
 
 from api import db
 
@@ -64,7 +65,11 @@ def create_app(test_config=None):
 
 
     app.register_blueprint(game.bp)
-    app.add_url_rule("/", endpoint="game")
+    app.add_url_rule("/", endpoint="games")
+
+
+    app.register_blueprint(genres.bp)
+    app.add_url_rule("/", endpoint="genres")
 
 
     app.register_blueprint(auth.bp)

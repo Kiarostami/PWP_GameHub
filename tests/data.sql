@@ -14,3 +14,9 @@ VALUES (1, 2, 3, "2022-04-16 12:00:00", "2022-02-16 12:11:24");
 INSERT INTO game (name, publisher, description, isFree, price)
 VALUES ("DUMMYTEST", "VALVE", "Dota 2 is a multiplayer online battle arena (MOBA) video game developed and published by Valve.", true, 0);
 
+INSERT INTO genre (name)
+VALUES ('Online-Multiplayer');
+
+INSERT INTO gameGenresList (game_id, genre_id)
+SELECT game.id, genre.id FROM game, genre
+WHERE game.name == 'DUMMYTEST' AND genre.name == 'Online-Multiplayer';
