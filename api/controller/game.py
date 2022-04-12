@@ -4,6 +4,9 @@ from flask import (
 
 from flask_jwt_extended import (jwt_required)
 
+
+from api.cache import cache
+
 from api.db import get_game_by_name_or_id
 from api.db import get_list_of_all_games
 
@@ -13,6 +16,7 @@ bp = Blueprint("game", __name__)
 
 @bp.route("/games/<string:name_or_id>", methods=["GET"])
 @jwt_required()
+@cache.cached(timeout=60)
 def get_game(name_or_id):
     """Returns the game by name or id.
     :parameters:
@@ -37,6 +41,7 @@ def get_game(name_or_id):
 
 @bp.route("/games", methods=["GET"])
 @jwt_required()
+@cache.cached(timeout=60)
 def get_all_games():
     """Returns all games.
     :parameters:

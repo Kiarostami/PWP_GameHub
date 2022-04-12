@@ -5,6 +5,8 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 
 
+from api.cache import cache
+
 from api.controller import generic
 from api.controller import user
 from api.controller import game
@@ -22,8 +24,14 @@ def create_app(test_config=None):
     app.config["JWT_SECRET_KEY"] = "aRandomSecretString!Ikonw!"
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
+    app.config["CACHE_TYPE"] = "SimpleCache"
+    app.config["CACHE_DEFAULT_TIMEOUT"] = 300
+
+    
     JWTManager(app)
     
+    cache.init_app(app)
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'db.sqlite'),
