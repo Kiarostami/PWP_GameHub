@@ -160,7 +160,7 @@ class Game:
     def __str__(self):  # pragma: no cover
         return self.__dict__.__str__()
 
-    def serialize(self):
+    def serialize(self, user_id):
         data = MasonBuilder(
             id=self.id,
             name=self.name,
@@ -171,6 +171,9 @@ class Game:
         )
 
         data.add_control("genres", href=url_for("genres.get_genres", game_id=self.id))
+        
+        # add post control to add the game to user
+        data.add_control_post("add_game", href=url_for("user.add_game_to_user", uid=user_id, gid=self.id), title="Add Game to this user", schema=None)
 
         return data
 

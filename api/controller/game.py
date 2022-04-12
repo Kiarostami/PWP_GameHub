@@ -3,7 +3,7 @@ from flask import (
     Blueprint, jsonify, Response
 )
 
-from flask_jwt_extended import (jwt_required)
+from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 
 from api.util import MASON_TYPE
@@ -33,10 +33,11 @@ def get_game(name_or_id):
         "status": "",
         "payload": {},
     }
+    user_id = get_jwt_identity()["id"]
     game_to_return = get_game_by_name_or_id(name_or_id)
     if game_to_return:
         response["status"] = "ok"
-        response["payload"] = game_to_return.serialize()
+        response["payload"] = game_to_return.serialize(user_id)
         return Response(
                         json.dumps(response),
                         status=200, 
