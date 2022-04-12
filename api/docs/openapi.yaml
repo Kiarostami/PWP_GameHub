@@ -1,0 +1,49 @@
+---
+swagger: "2.0"
+info:
+  description: "This is a API documnetation to GameHub project"
+  version: "1.0.0"
+  title: "Swagger GameHub"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "http://localhost:5000"
+basePath: "/"
+
+tags:
+- name: "login"
+  description: "Login API to receive the access token"
+- name: "user"
+  description: "All APIs that provide information about the user"
+- name: "games"
+  description: "Operations on games"
+schemes:
+- "http"
+paths:
+  /login:
+    post:
+      tags:
+      - "login"
+      summary: "Log-in a user and returns an access-token"
+      description: ""
+      operationId: "login-1"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "json"
+        description: "username and password for the user"
+        required: true
+        schema: 
+          "application/json"
+          # $ref: "#/definitions/login"
+      responses:
+        "400":
+          description: "Bad Request"
+        "200":
+          description: "Successful login"

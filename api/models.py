@@ -170,10 +170,10 @@ class Game:
             price=self.price
         )
 
-        data.add_control("genres", href=url_for("genres.get_genres", game_id=self.id))
+        data.add_control("gamehub:genres", href=url_for("genres.get_genres", game_id=self.id))
         
         # add post control to add the game to user
-        data.add_control_post("add_game", href=url_for("user.add_game_to_user", uid=user_id, gid=self.id), title="Add Game to this user", schema=None)
+        data.add_control_post("gamehub:add_game", href=url_for("user.add_game_to_user", uid=user_id, gid=self.id), title="Add Game to this user", schema=None)
 
         return data
 
@@ -190,6 +190,26 @@ class FriendRequest:
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.creationTime = ct
+    
+    def serialize(self):
+        data = MasonBuilder(
+            id=self.id,
+            sender_id=self.sender_id,
+            receiver_id=self.receiver_id,
+            creationTime=str(self.creationTime)
+        )
+
+        data.add_control_post("accept", 
+                              href=url_for("friend_request.accept_friend_request_api",
+                               user_id=self.receiver_id, friend_request_id=self.id),
+                                title="Accept Friend Request", schema=None
+                                )
+        
+        data.add_control_delete("decline", "Decline Friend Request", 
+        href=url_for("friend_request.reject_friend_request_api",
+         user_id=self.receiver_id, friend_request_id=self.id))
+
+        return data
 
 
 class FriendList:

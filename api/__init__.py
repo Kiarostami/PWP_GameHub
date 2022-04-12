@@ -32,7 +32,7 @@ def create_app(test_config=None):
     JWTManager(app)
     
     cache.init_app(app)
-
+    
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'db.sqlite'),

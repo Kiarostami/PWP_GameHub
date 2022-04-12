@@ -1,4 +1,5 @@
-from flask import (Blueprint, jsonify)
+import json
+from flask import (Blueprint, jsonify, Response)
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
 
 from api.db import delete_friend_from_friend_list
@@ -8,6 +9,8 @@ from api.db import get_received_friend_requests_by_user_id
 from api.db import add_friend_req
 from api.db import delete_friend_req
 from api.db import accept_friend_request
+
+from api.util import MASON_TYPE
 
 bp = Blueprint("friend_request", __name__, url_prefix="/friends")
 
@@ -34,8 +37,12 @@ def get_pending_friend_requests(user_id):
     received_friend_requests = get_received_friend_requests_by_user_id(user_id)
     if received_friend_requests:
         response["status"] = "ok"
+        for index in range(len(received_friend_requests)):
+            received_friend_requests[index] = received_friend_requests[index].serialize()
+
         response["payload"] = received_friend_requests
-        return jsonify(response), 200
+        return Response(json.dumps(response), status=200, mimetype=MASON_TYPE)
+        
     response["status"] = "not found"
     return jsonify(response), 404
 

@@ -313,7 +313,7 @@ def get_received_friend_requests_by_user_id(user_id):
     db = get_db()
     res = db.execute(f"SELECT * from friendRequest WHERE receiver_id = {user_id}").fetchall()
     if res:
-        lst = [FriendRequest(i[0], i[1], i[2], i[3]).__dict__ for i in res]
+        lst = [FriendRequest(i[0], i[1], i[2], i[3]) for i in res]
         return lst
     return None
 

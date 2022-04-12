@@ -68,7 +68,6 @@ def addUser():
                        request.json["avatar"] if "avatar" in request.json.keys() else None
                        )
 
-
         if res != "ok":
             response["status"] = res
             return jsonify(response), 400
