@@ -1,9 +1,12 @@
+import json
 from flask import (
-    Blueprint, jsonify
+    Blueprint, jsonify, Response
 )
 
 from flask_jwt_extended import (jwt_required)
 
+
+from api.util import MASON_TYPE
 
 from api.cache import cache
 
@@ -11,7 +14,7 @@ from api.db import get_game_by_name_or_id
 from api.db import get_list_of_all_games
 
 
-bp = Blueprint("game", __name__)
+bp = Blueprint("games", __name__)
 
 
 @bp.route("/games/<string:name_or_id>", methods=["GET"])
@@ -33,8 +36,12 @@ def get_game(name_or_id):
     game_to_return = get_game_by_name_or_id(name_or_id)
     if game_to_return:
         response["status"] = "ok"
-        response["payload"] = game_to_return.__dict__
-        return jsonify(response), 200
+        response["payload"] = game_to_return.serialize()
+        return Response(
+                        json.dumps(response),
+                        status=200, 
+                        mimetype=MASON_TYPE
+                        )
     response["status"] = "not found"
     return jsonify(response), 404
 

@@ -1,3 +1,8 @@
+from flask import url_for
+
+
+from api.util.masonbuilder import MasonBuilder
+
 class User:
     id: int = None
     username: str = None
@@ -112,15 +117,23 @@ class Genres:
     game_id: int = None
     name: str = None
 
-    def __init__(self, ggid, name): 
+    def __init__(self, ggid, name, game_id): 
         self.id = ggid  # pragma: no cover
         self.name = name  # pragma: no cover
+        self.game_id = game_id  # pragma: no cover
 
     def __repr__(self): 
         return self.__dict__.__str__() # pragma: no cover
 
     def __str__(self): 
         return self.__dict__.__str__() # pragma: no cover
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "game_id": self.game_id,
+            "name": self.name
+        }
 
 
 class Game:
@@ -146,6 +159,21 @@ class Game:
 
     def __str__(self):  # pragma: no cover
         return self.__dict__.__str__()
+
+    def serialize(self):
+        data = MasonBuilder(
+            id=self.id,
+            name=self.name,
+            publisher=self.publisher,
+            description=self.description,
+            isFree=self.isFree,
+            price=self.price
+        )
+
+        data.add_control("genres", href=url_for("genres.get_genres", game_id=self.id))
+
+        return data
+
 
 
 class FriendRequest:
