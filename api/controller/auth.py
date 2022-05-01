@@ -19,6 +19,66 @@ bp = Blueprint("auth", __name__)
 
 @bp.route("/login", methods=["POST"])
 def login():
+    """
+    --- 
+    consumes:
+    - "application/json"
+    produces:
+    - "application/json"
+    parameters:
+    - name: body
+      in: body
+      required: true
+      description: "Login data"
+      schema: 
+        id: login_schema
+        required:
+        - username
+        - password
+        properties:
+          username:
+            type: string
+            example: "test"
+          password:
+            type: string
+            example: "1234"
+            
+    responses:
+        200:
+            description: login success
+            schema:
+              type: object
+              properties:
+                access_token: 
+                    type: string
+                    example: "A Valid Token"
+                status:
+                    type: string
+                    example: "success"
+                payload:
+                    type: object
+                    properties:
+                        username:
+                            type: string
+                            example: "test"
+                        email:
+                            type: string
+                            example: "test@test.com"
+                        id:
+                            type: integer
+                            example: 1
+        400:
+            description: schema validation failed
+        
+        401:
+            description: login failed
+            schema:
+                type: object
+                properties:
+                    status:
+                        type: string
+                        example: "fail"
+    """
     response = {"status": "",
                 "payload": {},
                 "access_token": ""}
@@ -44,6 +104,45 @@ def login():
 
 @bp.route("/signup", methods = ["POST"])
 def addUser():
+    """
+    ---
+    consumes:
+    - "application/json"
+    produces:
+    - "application/json"
+    parameters:
+    - name: body
+      in: body
+      required: true
+      description: "Signup data"
+      schema:
+        id: signup_schema
+        required:
+        - username
+        - password
+        - email
+        properties:
+            username:
+                type: string
+                example: "test"
+            password:
+                type: string
+                example: "1234"
+            email:
+                type: string
+                example: "test@test.com"
+    responses:
+        201:
+            description: signup success
+            schema:
+                type: object
+                properties:
+                    status:
+                        type: string
+                        example: "success"
+        400:
+            description: schema validation failed or username already exists
+    """
     response = {"status": "",
                 "payload": {},
                 "access_token": ""}

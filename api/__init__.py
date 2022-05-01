@@ -4,6 +4,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 
+import flasgger
 
 from api.cache import cache
 
@@ -61,31 +62,37 @@ def create_app(test_config=None):
 
 
     app.register_blueprint(user.bp)
-    app.add_url_rule("/", endpoint="user")
+    # app.add_url_rule("/", endpoint="user")
 
 
     app.register_blueprint(game.bp)
-    app.add_url_rule("/", endpoint="games")
+    # app.add_url_rule("/", endpoint="games")
 
 
     app.register_blueprint(genres.bp)
-    app.add_url_rule("/", endpoint="genres")
+    # app.add_url_rule("/", endpoint="genres")
 
 
     app.register_blueprint(auth.bp)
-    app.add_url_rule("/", endpoint="auth")
+    # app.add_url_rule("/", endpoint="auth")
 
 
     app.register_blueprint(invite_message.bp)
-    app.add_url_rule("/", endpoint="invite_message")
+    # app.add_url_rule("/", endpoint="invite_message")
 
 
     app.register_blueprint(freind_request.bp)
-    app.add_url_rule("/", endpoint="friend_request")
+    # app.add_url_rule("/", endpoint="friend_request")
 
 
     app.register_blueprint(generic.bp)
-    app.add_url_rule("/", endpoint="generic")
+    # app.add_url_rule("/", endpoint="generic")
 
+    app.config['SWAGGER'] = {
+    'title': 'GameHub API Management',
+    'uiversion': 3
+    }
+    swagger = flasgger.Swagger(
+        app)
 
     return app
