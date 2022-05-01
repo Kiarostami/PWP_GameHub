@@ -24,10 +24,66 @@ bp = Blueprint("invite_message", __name__, url_prefix="/invitation")
 def get_invite_message(user_id):
     """
     Get all the invitation of a user.
-    :param user_id:
-    :return:
-        json: list of invitation
-
+    ---
+    produces:
+    - "application/json"
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: user_id
+      in: path
+      required: true
+      description: "The id of the user"
+      type: integer
+      example: 1
+    definitions:
+        InviteMessage:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    example: 1
+                sender_id:
+                    type: integer
+                    example: 1
+                receiver_id:
+                    type: integer
+                    example: 2
+                game_id:
+                    type: integer
+                    example: 3
+                suggestedTime:
+                    type: string
+                    example: "2020-01-01 00:00:00"
+                createdTime:
+                    type: string
+                    example: "2020-01-01 00:00:00"
+                accepted:
+                    type: boolean
+                    example: false
+    responses:
+        200:
+            description: "Success" 
+            schema:
+                type: object
+                properties:
+                    status:
+                        type: string
+                        example: "ok"
+                    payload:
+                        type: array
+                        items:
+                            $ref: '#/definitions/InviteMessage'
+        400:
+            description: "Bad request"
+        401:
+            description: "Unauthorized"
+        404:
+            description: "Not found"
     """
     response = {
         "status": "",
@@ -56,9 +112,43 @@ def get_invite_message(user_id):
 def create_invite_message(user_id):
     """
     Create a new invitation.
-    :param user_id:
-    :return:
-        json: invitation
+    ---
+    produces:
+    - "application/json"
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: user_id
+      in: path
+      required: true
+      description: "The id of the user"
+      type: integer
+      example: 1
+    - name: body
+      in: body
+      required: true
+      description: "The invitation message"
+      schema:
+        $ref: '#/definitions/InviteMessage'
+    responses:
+        201:
+            description: "Created"
+            schema:
+                type: object
+                properties:
+                    status:
+                        type: string
+                        example: "ok"
+        400:
+            description: "Bad request"
+        401:
+            description: "Unauthorized"
+        404:
+            description: "Not found"
     """
     response = {
         "status": "",
@@ -104,15 +194,46 @@ def create_invite_message(user_id):
     return jsonify(response), 201
 
 
-@bp.route("/<int:user_id>/<int:invite_id>", methods=["DELETE"])
+@bp.route("/<int:user_id>", methods=["DELETE"])
 @jwt_required()
-def delete_invite_message(user_id, invite_id):
+def delete_invite_message(user_id):
     """
     Delete an invitation.
-    :param user_id:
-    :param invite_id:
-    :return:
-        json: status
+    ---
+    produces:
+    - "application/json"
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: user_id
+      in: path
+      required: true
+      description: "The id of the user"
+      type: integer
+      example: 1
+    - name: body
+      in: body
+      required: true
+      description: "The invitation message"
+      schema:
+        type: object
+        properties:
+            invite_id:
+                type: integer
+                example: 1
+    responses:
+        200:
+            description: "Success"
+        400:
+            description: "Bad request"
+        401:
+            description: "Unauthorized"
+        404:
+            description: "Not found"
     """
     response = {
         "status": "",
@@ -123,6 +244,13 @@ def delete_invite_message(user_id, invite_id):
     if user_id != get_jwt_identity()["id"]:
         response["status"] = "unauthorized"
         return jsonify(response), 401
+
+    # check if invite_id is in request body
+    if "invite_id" not in request.json:
+        response["status"] = "bad request"
+        return jsonify(response), 400
+
+    invite_id = request.json["invite_id"]
 
     # check if the invitation is valid
     if get_invite_msg_by_id(invite_id) == None:
@@ -140,16 +268,49 @@ def delete_invite_message(user_id, invite_id):
     return jsonify(response), 200
 
 
-@bp.route("/<int:user_id>/<int:invite_id>", methods=["PUT"])
+@bp.route("/<int:user_id>", methods=["PUT"])
 @jwt_required()
-def update_invite_message(user_id, invite_id):
+def update_invite_message(user_id):
     """Update an inviation message by values of accepted = True 
-       or False in request.json
-       :parameters:
-            - user_id: int id of the user
-            - invite_id: int id of the invitation
-       :return:
-            json: status
+    ---
+    produces:
+    - "application/json"
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: user_id
+      in: path
+      required: true
+      description: "The id of the user"
+      type: integer
+      example: 1
+    - name: body
+      in: body
+      required: true
+      description: "The invitation message id"
+      schema:
+        type: object
+        properties:
+            invite_id:
+                type: integer
+                example: 1
+            accepted:
+                type: boolean
+                example: True
+
+    responses:
+        200:
+            description: "Success"
+        400:
+            description: "Bad request"
+        401:
+            description: "Unauthorized"
+        404:
+            description: "Not found"
     """
     response = {
         "status": "",
@@ -160,6 +321,13 @@ def update_invite_message(user_id, invite_id):
     if user_id != get_jwt_identity()["id"]:
         response["status"] = "unauthorized"
         return jsonify(response), 401
+
+    # check if invite_id is in request body
+    if "invite_id" not in request.json:
+        response["status"] = "bad request"
+        return jsonify(response), 400
+
+    invite_id = request.json["invite_id"]
 
     # check if the invitation is valid
     if get_invite_msg_by_id(invite_id) == None:
