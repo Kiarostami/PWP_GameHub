@@ -20,6 +20,7 @@ bp = Blueprint("auth", __name__)
 @bp.route("/login", methods=["POST"])
 def login():
     """
+    Login endpoint.
     --- 
     consumes:
     - "application/json"
@@ -105,6 +106,7 @@ def login():
 @bp.route("/signup", methods = ["POST"])
 def addUser():
     """
+    signup endpoint.
     ---
     consumes:
     - "application/json"
