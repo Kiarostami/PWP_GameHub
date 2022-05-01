@@ -17,10 +17,47 @@ bp = Blueprint("genres", __name__)
 @jwt_required()
 def get_genres(game_id):
     """"Return all genres of a game
-    :parameters:
-        - game_id: int
-    :return:
-        list of all genres for a game
+    ---
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: game_id
+      in: path
+      required: true
+      description: "The id of the game"
+      type: integer
+      example: 1
+    definitions:
+        Genre:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    example: 1
+                name:
+                    type: string
+                    example: "Action"
+    responses:
+        200:
+            description: "Success"
+            schema:
+                type: object
+                properties:
+                    payload:
+                        type: array
+                        items:
+                            $ref: '#/definitions/Genre'
+                    status:
+                        type: string
+                        example: "success"
+        404:
+            description: "Not found"
     """
     response = {
         "status": "",
