@@ -173,7 +173,7 @@ class Game:
         data.add_control("gamehub:genres", href=url_for("genres.get_genres", game_id=self.id))
         
         # add post control to add the game to user
-        data.add_control_post("gamehub:add_game", href=url_for("user.add_game_to_user", uid=user_id, gid=self.id), title="Add Game to this user", schema=None)
+        data.add_control_post("gamehub:add_game", href=url_for("user.add_game_to_user", user_id=user_id, game_id=self.id), title="Add Game to this user", schema=None)
 
         return data
 
