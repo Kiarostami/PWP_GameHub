@@ -60,6 +60,10 @@ def test_delete_invite_message(client, auth):
     assert response.status_code == 401
 
     # delete
+    response = client.delete(url + "/1", headers={"Authorization": "Bearer " + token}, json={"invite_idsdsad": 2})
+    assert response.status_code == 400
+
+    # delete
     response = client.delete(url + "/1", headers={"Authorization": "Bearer " + token}, json={"invite_id": 2})
     assert response.status_code == 200
 
@@ -90,6 +94,10 @@ def test_update_invite_message(client, auth):
 
     # invalid json body 
     response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"acceptedXX": True, "invite_id": 1})
+    assert response.status_code == 400
+
+    # invalid json body 
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"acceptedXX": True, "invite_id1212": 1})
     assert response.status_code == 400
 
     # invalid accepted value

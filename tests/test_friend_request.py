@@ -33,6 +33,9 @@ def test_cancel_friend_request(client, auth):
     # send a friend request
     response = client.post(url + "3", headers={"Authorization": "Bearer " + token3}, json={"user2_id": 1})
     assert response.status_code == 200
+    # send a friend request
+    response = client.post(url + "3", headers={"Authorization": "Bearer " + token3}, json={"user1212_id": 1})
+    assert response.status_code >= 400
     # cancel the request: unauthorized
     response = client.delete(url + "3/cancel/1", headers={"Authorization": "Bearer " + token})
     assert response.status_code == 401

@@ -20,25 +20,25 @@ def test_get_methods(client, auth, url, message):
 def test_profile(client, auth):
     response = auth.login2()
     token = json.loads(response.data.decode())['access_token']
-    response = client.post('/user/1000/profile/HELLLLLLO/Invisible', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/1000/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "I am invisible", "status": "invisible"})
     assert b'unauthorized' in response.data
-    response = client.put('/user/1000/profile/bio/Invisible', headers={"Authorization": "Bearer " + token})
+    response = client.put('/user/1000/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "I am invisible"})
     assert b'unauthorized' in response.data
-    response = client.put('/user/1000/profile/status/Invisible', headers={"Authorization": "Bearer " + token})
+    response = client.put('/user/1000/profile', headers={"Authorization": "Bearer " + token}, json={"status": "invisible"})
     assert b'unauthorized' in response.data
-    response = client.put('/user/2/profile/bio/Terve!', headers={"Authorization": "Bearer " + token})
+    response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "TERVE!"})
     assert b'does not' in response.data
-    response = client.put('/user/2/profile/status/online', headers={"Authorization": "Bearer " + token})
+    response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"status": "off"})
     assert b'does not' in response.data
-    response = client.post('/user/2/profile/HELLLLLLO/Invisible', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "I am invisible", "status": "invisible"})
     assert b'ok' in response.data
     response = client.get('/user/2/profile', headers={"Authorization": "Bearer " + token})
     assert b'ok' in response.data
-    response = client.put('/user/2/profile/bio/Terve!', headers={"Authorization": "Bearer " + token})
+    response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "TERVE!"})
     assert b'ok' in response.data
-    response = client.put('/user/2/profile/status/online', headers={"Authorization": "Bearer " + token})
+    response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"status": "off"})
     assert b'ok' in response.data
-    response = client.post('/user/2/profile/HELLLLLLO/Invisible', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "I am invisible", "status": "invisible"})
     assert b'already' in response.data
     
 
@@ -47,15 +47,15 @@ def test_games(client, auth):
     token = json.loads(response.data.decode())['access_token']
     response = client.get('/user/2/games', headers={"Authorization": "Bearer " + token})
     assert response.status_code == 404
-    response = client.post('/user/2/games/1', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 1})
     assert response.status_code == 200
-    response = client.post('/user/2/games/1', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 1})
     assert response.status_code == 400
     response = client.get('/user/2/games', headers={"Authorization": "Bearer " + token})
     assert response.status_code == 200
-    response = client.post('/user/2000/games/1', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2000/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 1})
     assert response.status_code == 401
-    response = client.post('/user/2/games/2000', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 2000})
     assert response.status_code == 404
-    response = client.post('/user/2/games/1', headers={"Authorization": "Bearer " + token})
+    response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 1})
     assert response.status_code == 400

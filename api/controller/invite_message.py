@@ -334,11 +334,6 @@ def update_invite_message(user_id):
         response["status"] = "not found"
         return jsonify(response), 404
 
-    # check if the request body is empty
-    if not request.json:
-        response["status"] = "body has no data"
-        return jsonify(response), 400
-
     # check if the request body is valid
     if not request.json.get("accepted", False):
         response["status"] = "body has no key accepted"
