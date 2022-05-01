@@ -22,12 +22,100 @@ bp = Blueprint("games", __name__)
 @cache.cached(timeout=60)
 def get_game(name_or_id):
     """Returns the game by name or id.
-    :parameters:
-        name_or_id: string
-            The name or id of the game to get.
-    :returns:
-        json:
-            A json object containing the status of the request and the payload.
+    ---
+    produces:
+    - application/json
+    - application/vnd.mason+json
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: name_or_id
+      in: path
+      required: true
+      description: "The name or id of the game"
+      type: string
+      example: "DOTA 2"
+    definitions:
+     GameWithCtrl:
+        type: object
+        properties:
+            id:
+                type: integer
+                example: 1
+            name:
+                type: string
+                example: "DOTA 2"
+            publisher:
+                type: string
+                example: "Valve"
+            description:
+                type: string
+                example: "DOTA 2 is a multiplayer ..."
+            isFree:
+                type: boolean
+                example: 1
+            price:
+                type: integer
+                example: 100
+            "@control":
+                type: object
+                properties:
+                    "gamehub:genres":
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                href:
+                                    type: string
+                                    example: "/genres/1"
+                    "gamehub:add_game":
+                        type: object
+                        properties:
+                            href:
+                                type: string
+                                example: "/user/1/games/1"
+                            method:
+                                type: string
+                                example: "POST"
+                            encoding:
+                                type: string
+                                example: "application/json"
+                            title:
+                                type: string
+                                example: "Add game"
+     Game:
+        type: object
+        properties:
+            id:
+                type: integer
+                example: 1
+            name:
+                type: string
+                example: "DOTA 2"
+            publisher:
+                type: string
+                example: "Valve"
+            description:
+                type: string
+                example: "DOTA 2 is a multiplayer ..."
+            isFree:
+                type: boolean
+                example: 1
+            price:
+                type: integer
+                example: 100
+        
+    responses:
+        200:
+            description: the game and details
+            schema:
+                $ref: '#/definitions/GameWithCtrl'
+        404:
+            description: game not found
     """
     response = {
         "status": "",
@@ -52,11 +140,31 @@ def get_game(name_or_id):
 @cache.cached(timeout=60)
 def get_all_games():
     """Returns all games.
-    :parameters:
-        None
-    :returns:
-        json:
-            A json object containing the status of the request and the payload.
+    ---
+    produces:
+    - application/json
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    responses:
+        200:
+            description: the list of all games
+            schema:
+                type: object
+                properties:
+                    status:
+                        type: string
+                        example: "ok"
+                    payload:
+                        type: array
+                        items:
+                            $ref: '#/definitions/Game'
+        400:
+            description: error
     """
     response = {
         "status": "",
