@@ -48,19 +48,19 @@ def test_delete_invite_message(client, auth):
     assert response.status_code == 201
 
     # unauthorized
-    response = client.delete(url + "/2/1", headers={"Authorization": "Bearer " + token})
+    response = client.delete(url + "/2", headers={"Authorization": "Bearer " + token}, json={"invite_id": 1})
     assert response.status_code == 401
 
     # invite msg not found
-    response = client.delete(url + "/1/100", headers={"Authorization": "Bearer " + token})
+    response = client.delete(url + "/1", headers={"Authorization": "Bearer " + token}, json={"invite_id": 100})
     assert response.status_code == 404
 
     # delete unauthorized
-    response = client.delete(url + "/1/1", headers={"Authorization": "Bearer " + token})
+    response = client.delete(url + "/1", headers={"Authorization": "Bearer " + token}, json={"invite_id": 1})
     assert response.status_code == 401
 
     # delete
-    response = client.delete(url + "/1/2", headers={"Authorization": "Bearer " + token})
+    response = client.delete(url + "/1", headers={"Authorization": "Bearer " + token}, json={"invite_id": 2})
     assert response.status_code == 200
 
 
@@ -77,30 +77,30 @@ def test_update_invite_message(client, auth):
     token2 = json.loads(response.data.decode())['access_token']
 
     # unauthorized
-    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token})
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token}, json={"invite_id": 1})
     assert response.status_code == 401
 
     # not found
-    response = client.put(url + "/2/100", headers={"Authorization": "Bearer " + token2})
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"invite_id": 100})
     assert response.status_code == 404
 
     # invalid json body 
-    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token2})
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"invite_id": 1})
     assert response.status_code == 400
 
     # invalid json body 
-    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token2}, json={"acceptedXX": True})
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"acceptedXX": True, "invite_id": 1})
     assert response.status_code == 400
 
     # invalid accepted value
-    response = client.put(url + "/2/1", headers={"Authorization": "Bearer " + token2}, json={"accepted": "no"})
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"accepted": "no", "invite_id": 1})
     assert response.status_code == 400
 
     # invalid user as receiver 
-    response = client.put(url + "/1/2", headers={"Authorization": "Bearer " + token}, json={"accepted": True})
+    response = client.put(url + "/1", headers={"Authorization": "Bearer " + token}, json={"accepted": True, "invite_id": 2})
     assert response.status_code == 400
 
     # valid update
-    response = client.put(url + "/2/2", headers={"Authorization": "Bearer " + token2}, json={"accepted": True})
+    response = client.put(url + "/2", headers={"Authorization": "Bearer " + token2}, json={"accepted": True, "invite_id": 2})
     print(response.data)
     assert response.status_code == 200
