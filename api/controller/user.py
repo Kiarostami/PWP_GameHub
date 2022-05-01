@@ -4,7 +4,7 @@ from flask import (
 
 from flask_jwt_extended import (jwt_required, get_jwt_identity
 )
-from api.db import add_game_to_list
+from api.db import add_game_to_list, delete_friend_from_friend_list
 from api.db import check_user_has_game 
 from api.db import get_game_by_name_or_id
 from api.db import get_list_of_games_per_user
@@ -94,9 +94,9 @@ def get_user_info_by_id(user_id: int):
         return jsonify(response), 404
 
 
-@bp.route("/user/<int:uid>/profile", methods=["GET"])
+@bp.route("/user/<int:user_id>/profile", methods=["GET"])
 @jwt_required()
-def get_profile(uid):
+def get_profile(user_id):
     """Returns the profile of a user by their id.
     ---
     produces:
@@ -155,7 +155,7 @@ def get_profile(uid):
         "payload": {},
     }
     
-    profile = get_user_profile(uid)
+    profile = get_user_profile(user_id)
     if profile[0] != "ok":
         response["status"] = profile[0]
         return jsonify(response), 404
@@ -164,9 +164,9 @@ def get_profile(uid):
     return jsonify(response), 200
 
 
-@bp.route("/user/<int:uid>/friends", methods=["GET"])
+@bp.route("/user/<int:user_id>/friends", methods=["GET"])
 @jwt_required()
-def get_users_friends(uid):
+def get_users_friends(user_id):
     """Returns the friends of a user by their id.
     ---
     produces:
@@ -206,7 +206,7 @@ def get_users_friends(uid):
         "status": "",
         "payload": {},
     }
-    friends_list = get_list_of_friends(uid)
+    friends_list = get_list_of_friends(user_id)
     if friends_list:
         response["status"] = "ok"
         response["payload"] = friends_list
@@ -214,6 +214,71 @@ def get_users_friends(uid):
 
     response["status"] = "not found"
     return jsonify(response), 404
+
+@bp.route("/user/<int:user_id>/friends", methods=["DELETE"])
+@jwt_required()
+def remove_a_friend(user_id):
+    """Remove a friend from the friends list.
+    ---
+    produces:
+    - "application/json"
+    parameters:
+    - name: Authorization
+      in: header
+      description: "Bearer token"
+      required: true
+      type: string
+      format: "Bearer <token>"
+    - name: user_id
+      in: path
+      description: "User's id"
+      required: true
+      type: integer
+      schema:
+        type: integer
+        example: 1
+    - name: body
+      in: body
+      description: "The friend's id"
+      required: true
+      schema:
+        type: object
+        properties:
+            user2_id:
+                type: integer
+                example: 2
+    responses:
+        200:
+            description: "success removing friend"
+        401:
+            description: "Unauthorized"
+        404:
+            description: "Not found"
+
+    """
+    response = {
+        "status": "",
+        "payload": {}
+    }
+    if user_id != get_jwt_identity()["id"]:
+        response["status"] = "unauthorized"
+        return jsonify(response), 401
+    
+    # check if user2_id exists in request body
+    if "user2_id" not in request.json:
+        response["status"] = "bad request"
+        return jsonify(response), 400
+    user2_id = request.json["user2_id"]
+
+    friend_request = delete_friend_from_friend_list(user_id, user2_id)
+
+    if friend_request == "ok":
+        response["status"] = "deleted"
+        return jsonify(response), 200
+
+    response["status"] = "not found"
+    return jsonify(response), 404
+
 
 
 @bp.route("/user/<int:user_id>/profile", methods=["POST"])

@@ -361,63 +361,6 @@ def cancel_friend_request_api(user_id, friend_request_id):
     return jsonify(response), 404
     
 
-@bp.route("/<int:user_id>/remove/<int:user2_id>", methods=["DELETE"])
-@jwt_required()
-def remove_a_friend(user_id, user2_id):
-    """Remove a friend from the friends list.
-    ---
-    produces:
-    - "application/json"
-    parameters:
-    - name: Authorization
-      in: header
-      description: "Bearer token"
-      required: true
-      type: string
-      format: "Bearer <token>"
-    - name: user_id
-      in: path
-      description: "User's id"
-      required: true
-      type: integer
-      schema:
-        type: integer
-        example: 1
-    - name: user2_id
-      in: path
-      description: "Target user's id"
-      required: true
-      type: integer
-      schema:
-        type: integer
-        example: 2
-    responses:
-        200:
-            description: "success removing friend"
-        401:
-            description: "Unauthorized"
-        404:
-            description: "Not found"
-
-    """
-    response = {
-        "status": "",
-        "payload": {}
-    }
-    if user_id != get_jwt_identity()["id"]:
-        response["status"] = "unauthorized"
-        return jsonify(response), 401
-
-    friend_request = delete_friend_from_friend_list(user_id, user2_id)
-
-    if friend_request == "ok":
-        response["status"] = "deleted"
-        return jsonify(response), 200
-
-    response["status"] = "not found"
-    return jsonify(response), 404
-
-
 @bp.route("/<int:user_id>/reject/<int:friend_request_id>", methods=["DELETE"])
 @jwt_required()
 def reject_friend_request_api(user_id, friend_request_id):
