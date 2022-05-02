@@ -212,7 +212,7 @@ def get_list_of_friends(user_id):
                      f"AND user.id != {user_id})"
                     ).fetchall()
 
-    lst = [(i[0], i[1]) for i in res]
+    lst = [User(i[0], i[1], None, None).protected() for i in res]
     return lst
 
 
@@ -366,8 +366,9 @@ def delete_friend_req(user_id, fr_id):
     db = get_db()
     # check if friend request exists
     res = db.execute(f"SELECT * FROM friendRequest WHERE id = {fr_id}").fetchone()
+    print(res[0], res[1], res[2])
     if res:
-        db.execute(f"DELETE FROM friendRequest WHERE (id = {fr_id} AND receiver_id = {user_id}) ")
+        db.execute(f"DELETE FROM friendRequest WHERE ((id = {fr_id} AND receiver_id = {user_id}) OR (id = {fr_id} AND sender_id = {user_id}))   ")
         db.commit()
         return "ok"
     return "not found"
