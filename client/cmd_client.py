@@ -1,3 +1,4 @@
+from urllib import response
 import requests
 import json
 
@@ -35,6 +36,7 @@ class User:
         if response.status_code == 200:
             self.access_token = response.json()["access_token"]
             self.user_id = response.json()["payload"]["id"]
+            print("user_id is: ", self.user_id)
             return True
         else:
             return False
@@ -64,6 +66,28 @@ class User:
             headers={"Authorization": f"Bearer {self.access_token}"},
             json={"bio": bio, "status": status})
         return response.json()
+
+    def get_games(self):
+        response = requests.get(f"{URL}/user/{self.user_id}/games", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+    
+    def get_friends(self):
+        response = requests.get(f"{URL}/user/{self.user_id}/friends", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def get_my_games(self):
+        response = requests.get(f"{URL}/user/{self.user_id}/games", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def get_my_friends(self):
+        response = requests.get(f"{URL}/user/{self.user_id}/friends", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def remove_a_friend(self, friend_id):
+        response = requests.delete(f"{URL}/{self.user_id}/friends/", 
+                        headers={"Authorization": f"Bearer {self.access_token}"},
+                        json={"user2_id": friend_id})
+        return response.json()
     
     def get_all_games(self):
         response = requests.get(f"{URL}/games", headers={"Authorization": f"Bearer {self.access_token}"})
@@ -78,10 +102,66 @@ class User:
         return response.json()
     
     def add_game(self, game_id):
-        response = requests.post(f"{URL}/user/{self.id}/games/{game_id}", 
-                headers={"Authorization": f"Bearer {self.access_token}"})
+        response = requests.post(f"{URL}/user/{self.user_id}/games", 
+                headers={"Authorization": f"Bearer {self.access_token}"},
+                json={"game_id": game_id})
         return response.json()
 
+    def get_game_genres(self, game_id):
+        response = requests.get(f"{URL}/genres/{game_id}", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+    
+    def get_pending_requests(self):
+        response = requests.get(f"{URL}/friends/{self.id}/pending", 
+                        headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+    
+    def get_sent_requests(self):
+        response = requests.get(f"{URL}/friends/{self.user_id}/sent", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+    
+    def add_friend(self, user_id):
+        response = requests.post(f"{URL}/friends/{self.user_id}", headers={"Authorization": f"Bearer {self.access_token}"}, json={"user2_id": user_id})
+        return response.json()
+    
+    def accept_friend(self, friend_request_id):
+        response = requests.post(f"{URL}/friends/{self.user_id}/accept/{friend_request_id}", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def cancel_friend_request(self, friend_request_id):
+        response = requests.delete(f"{URL}/friends/{self.user_id}/cancel/{friend_request_id}", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def reject_friend_request(self, friend_request_id):
+        response = requests.delete(f"{URL}/friends/{self.user_id}/reject/{friend_request_id}", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def get_invitations(self):
+        response = requests.get(f"{URL}/invitation/{self.user_id}", headers={"Authorization": f"Bearer {self.access_token}"})
+        return response.json()
+
+    def create_invitation(self, user_id, game_id, suggested_time):
+        response = requests.post(f"{URL}/invitation/{self.user_id}",
+                            headers={"Authorization": f"Bearer {self.access_token}"},
+                            json={"receiver_id": user_id, "game_id": game_id, "suggestedTime": suggested_time})
+        return response.json()
+
+    def delete_invitation(self, invitation_id):
+        response = requests.delete(f"{URL}/invitation/{self.user_id}",
+         headers={"Authorization": f"Bearer {self.access_token}"}, json={"invite_id": invitation_id})
+        return response.json()
+
+    def update_invitation(self, invitation_id, accepted: bool):
+        response = requests.put(f"{URL}/invitation/{self.user_id}",
+                        headers={"Authorization": f"Bearer {self.access_token}"},
+                        json={"invite_id": invitation_id, "accepted": accepted})
+        return response.json()
+
+    
+
+
+def print_json(json_data):
+    print(json.dumps(json_data, indent=4, sort_keys=True))
 
 def print_start():
     print("""
@@ -101,15 +181,9 @@ def print_help():
     print("""
         0 - clear
         1 - profile
-            1 - get a profile
-            2 - add profile (bio, status)
-            3 - update profile (bio, status)
         2 - games
-            1 - get all games
-            2 - get game by id
-            3 - get game by name
-            4 - add a game to your list
-
+        3 - friends request
+        4 - invitations
     """)
 
 
@@ -135,40 +209,101 @@ if __name__ == "__main__":
         inp = input("Enter command: # type help for list of commands\n")
         if inp == "help":
             print_help()
+        elif inp == "exit":
+            exit(1)
         elif inp == "0":
             print("Clearing...")
-            user = None
+            #user = None
         elif inp == "1":
             print("Profile...")
             print("""
+            0 - back
             1 - get a profile
             2 - add profile (bio, status)
             3 - update profile (bio, status)
             4 - get my games
             5 - get my friends
+            6 - remove a friend
             """)
             inp1 = input("Enter command: ")
-            if inp1 == "1":
-                print(user.get_profile())
+            if inp1 == "0":
+                continue
+            elif inp1 == "1":
+                print_json(user.get_profile())
             elif inp1 == "2":
-                print(user.add_profile(input("Enter bio: "), input("Enter status: ")))
+                print_json(user.add_profile(input("Enter bio: "), input("Enter status: ")))
             elif inp1 == "3":
-                print(user.update_profile(input("Enter bio: "), input("Enter status: ")))
+                print_json(user.update_profile(input("Enter bio: "), input("Enter status: ")))
+            elif inp1 == "4":
+                print_json(user.get_my_games())
+            elif inp1 == "5":
+                print_json(user.get_my_friends())
+            elif inp1 == "6":
+                print_json(user.remove_friend(input("Enter friend id: ")))
+
         elif inp == "2":
             print("Games...")
             print("""
+            0 - back
             1 - get all games
             2 - get game by id
             3 - get game by name
             4 - add a game to your list
+            5 - show genres of a game
             """)
             inp1 = input("Enter command: ")
-            if inp1 == "1":
-                print(user.get_all_games())
+            if inp1 == "0":
+                continue
+            elif inp1 == "1":
+                print_json(user.get_all_games())
             elif inp1 == "2":
-                print(user.get_game_by_id(input("Enter game id: ")))
+                print_json(user.get_game_by_id(input("Enter game id: ")))
             elif inp1 == "3":
-                print(user.get_game_by_name(input("Enter game name: ")))
+                print_json(user.get_game_by_name(input("Enter game name: ")))
             elif inp1 == "4":
-                print(user.add_game(input("Enter game id: ")))
+                print_json(user.add_game(input("Enter game id: ")))
+            elif inp1 == "5":
+                print_json(user.get_game_genres(input("Enter game id: ")))
         
+        elif inp == "3":
+            print("Friends request...")
+            print("""
+            0 - back
+            1 - get pending requests
+            2 - get sent requests
+            3 - add friend
+            4 - accept friend
+            5 - cancel friend request
+            6 - reject friend request
+            """)
+            inp1 = input("Enter command: ")
+            if inp1 == "0":
+                continue
+            elif inp1 == "1":
+                print_json(user.get_pending_requests())
+            elif inp1 == "2":
+                print_json(user.get_sent_requests())
+            elif inp1 == "3":
+                print_json(user.add_friend(input("Enter user id: ")))
+            elif inp1 == "4":
+                print_json(user.accept_friend(input("Enter friend request id: ")))
+            elif inp1 == "5":
+                print_json(user.cancel_friend_request(input("Enter friend request id: ")))
+            elif inp1 == "6":
+                print_json(user.reject_friend_request(input("Enter friend request id: ")))
+        elif inp == "4":
+            print("Invitations...")
+            print("""
+            0 - back
+            """)
+            inp1 = input("Enter command: ")
+            if inp1 == "0":
+                continue
+            elif inp1 == "1":
+                print_json(user.get_invitations())
+            elif inp1 == "2":
+                print_json(user.create_invitation(input("Enter user id: "), input("Enter game id: "), input("Enter suggested time: ")))
+            elif inp1 == "3":
+                print_json(user.delete_invitation(input("Enter invitation id: ")))
+            elif inp1 == "4":
+                print_json(user.update_invitation(input("Enter invitation id: "), input("Enter accepted: ")))
