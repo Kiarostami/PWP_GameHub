@@ -9,6 +9,9 @@ def test_accept_friend_double_side(client, auth):
     token3 = json.loads(response.data.decode())['access_token']
     response = client.post(url + "3", headers={"Authorization": "Bearer " + token3}, json={"user2_id": 1})
     assert response.status_code == 200
+
+    response = client.post(url + "3", headers={"Authorization": "Bearer " + token3})
+    assert response.status_code == 400
     
     # unauthorized
     response = client.post(url + "2/accept/1", headers={"Authorization": "Bearer " + token})
@@ -61,6 +64,8 @@ def test_delete_from_friends(client, auth):
     assert response.status_code == 200
     response = client.delete(url2 + "3/friends", headers={"Authorization": "Bearer " + token}, json={"user2_id": 1})
     assert response.status_code == 401
+    response = client.delete(url2 + "1/friends", headers={"Authorization": "Bearer " + token}, json={"userjhjhv2_id": 3})
+    assert response.status_code == 400
     response = client.delete(url2 + "1/friends", headers={"Authorization": "Bearer " + token}, json={"user2_id": 3})
     assert response.status_code == 200
     response = client.delete(url2 + "3/friends", headers={"Authorization": "Bearer " + token3}, json={"user2_id": 1})

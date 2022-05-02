@@ -199,13 +199,13 @@ class FriendRequest:
             creationTime=str(self.creationTime)
         )
 
-        data.add_control_post("accept", 
+        data.add_control_post("gamehub:accept", 
                               href=url_for("friend_request.accept_friend_request_api",
                                user_id=self.receiver_id, friend_request_id=self.id),
                                 title="Accept Friend Request", schema=None
                                 )
         
-        data.add_control_delete("decline", "Decline Friend Request", 
+        data.add_control_delete("gamehub:decline", "Decline Friend Request", 
         href=url_for("friend_request.reject_friend_request_api",
          user_id=self.receiver_id, friend_request_id=self.id))
 

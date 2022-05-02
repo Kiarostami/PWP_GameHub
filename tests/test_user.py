@@ -30,8 +30,12 @@ def test_profile(client, auth):
     assert b'does not' in response.data
     response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"status": "off"})
     assert b'does not' in response.data
+    response = client.post('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bklio": "I am invisible", "statkknus": "invisible"})
+    assert b'bad' in response.data
     response = client.post('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "I am invisible", "status": "invisible"})
     assert b'ok' in response.data
+    response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"llbio": "I am invisible", "stmjatus": "invisible"})
+    assert b'bad' in response.data
     response = client.get('/user/2/profile', headers={"Authorization": "Bearer " + token})
     assert b'ok' in response.data
     response = client.put('/user/2/profile', headers={"Authorization": "Bearer " + token}, json={"bio": "TERVE!"})
@@ -47,6 +51,8 @@ def test_games(client, auth):
     token = json.loads(response.data.decode())['access_token']
     response = client.get('/user/2/games', headers={"Authorization": "Bearer " + token})
     assert response.status_code == 404
+    response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"gkkame_id": 1})
+    assert response.status_code == 400
     response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 1})
     assert response.status_code == 200
     response = client.post('/user/2/games', headers={"Authorization": "Bearer " + token}, json={"game_id": 1})

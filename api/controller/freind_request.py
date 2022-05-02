@@ -230,9 +230,15 @@ def add_friend_request(user_id):
         "status": "",
         "payload": {}
     }
+
     if user_id != get_jwt_identity()["id"]:
         response["status"] = "unauthorized"
         return jsonify(response), 401
+
+    if request.json is None:
+        response["status"] = "bad request"
+        return jsonify(response), 400
+
     if "user2_id" not in request.json:
         response["status"] = "bad request"
         return jsonify(response), 400
