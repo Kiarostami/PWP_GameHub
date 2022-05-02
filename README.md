@@ -45,6 +45,10 @@ To run the application on the port of 5000:
 $ python3 app.py
 ```
 
+### ACCESS to the API Documentation
+
+You can access the API documentation by visiting the following url:
+http://localhost:5000/apidocs/
 
 ### RUN THE CLIENT
 
